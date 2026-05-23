@@ -72,3 +72,6 @@ coverage/
 
 # Docker
 .docker/
+#planning
+plan.md
+
