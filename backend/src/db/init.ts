@@ -42,8 +42,15 @@ export const initDb = async () => {
         is_up BOOLEAN NOT NULL,
         error_message TEXT,
         checked_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
-        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+        ssl_days_remaining INTEGER
       );
+    `);
+
+    // Self-healing migration for existing databases:
+    await query(`
+      ALTER TABLE check_results 
+      ADD COLUMN IF NOT EXISTS ssl_days_remaining INTEGER;
     `);
 
     // Create Index on check_results (website_id, checked_at DESC) for quick history queries

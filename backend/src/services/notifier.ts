@@ -64,17 +64,36 @@ export const triggerNotifications = async (website: any, eventType: 'down' | 're
 };
 
 // 2. Job Handlers (consumed by the Bull worker)
-export const sendEmailAlert = async (website: any, eventType: 'down' | 'resolved', message: string) => {
+export const sendEmailAlert = async (website: any, eventType: 'down' | 'resolved' | 'ssl_expiring', message: string) => {
   const isDown = eventType === 'down';
-  const subject = `[${isDown ? 'ALERT' : 'RESOLVED'}] ${website.name} is ${isDown ? 'DOWN' : 'UP'}`;
+  const isSsl = eventType === 'ssl_expiring';
+  
+  let statusText = 'UP 🟢';
+  let badgeColor = '#d4edda';
+  let borderStyle = '#c3e6cb';
+  let textColor = '#155724';
+
+  if (isDown) {
+    statusText = 'DOWN 🔴';
+    badgeColor = '#f8d7da';
+    borderStyle = '#f5c6cb';
+    textColor = '#721c24';
+  } else if (isSsl) {
+    statusText = 'SSL EXPIRING 🟡';
+    badgeColor = '#fff3cd';
+    borderStyle = '#ffeeba';
+    textColor = '#856404';
+  }
+
+  const subject = `[${eventType.toUpperCase()}] ${website.name}`;
   
   const html = `
-    <div style="font-family: Arial, sans-serif; padding: 20px; border-radius: 8px; border: 1px solid ${isDown ? '#f5c6cb' : '#c3e6cb'}; background-color: ${isDown ? '#f8d7da' : '#d4edda'};">
-      <h2 style="color: ${isDown ? '#721c24' : '#155724'}; margin-top: 0;">Website Status Update</h2>
+    <div style="font-family: Arial, sans-serif; padding: 20px; border-radius: 8px; border: 1px solid ${borderStyle}; background-color: ${badgeColor};">
+      <h2 style="color: ${textColor}; margin-top: 0;">Website Security Notification</h2>
       <p style="font-size: 16px;">
         <strong>Website:</strong> <a href="${website.url}" style="color: #004085; text-decoration: none;">${website.name}</a><br>
         <strong>URL:</strong> ${website.url}<br>
-        <strong>Status:</strong> <span style="font-weight: bold; color: ${isDown ? '#dc3545' : '#28a745'};">${isDown ? 'DOWN 🔴' : 'UP 🟢'}</span><br>
+        <strong>Status:</strong> <span style="font-weight: bold; color: ${textColor};">${statusText}</span><br>
         <strong>Time:</strong> ${new Date().toLocaleString()}<br>
         <strong>Detail:</strong> ${message}
       </p>
@@ -92,20 +111,32 @@ export const sendEmailAlert = async (website: any, eventType: 'down' | 'resolved
   };
 
   await transporter.sendMail(mailOptions);
-  logger.info(`[Email Worker] Dispatched incident alert email for ${website.name}`);
+  logger.info(`[Email Worker] Dispatched alert email for ${website.name} (type: ${eventType})`);
 };
 
-export const sendSlackAlert = async (webhookUrl: string, website: any, eventType: 'down' | 'resolved', message: string) => {
+export const sendSlackAlert = async (webhookUrl: string, website: any, eventType: 'down' | 'resolved' | 'ssl_expiring', message: string) => {
   const isDown = eventType === 'down';
-  const color = isDown ? '#e15b64' : '#3cb371';
-  const statusEmoji = isDown ? '🔴 *DOWN*' : '🟢 *UP*';
+  const isSsl = eventType === 'ssl_expiring';
+
+  let color = '#3cb371';
+  let statusEmoji = '🟢 *UP*';
+  let titleText = 'Uptime Monitoring Status Change';
+
+  if (isDown) {
+    color = '#e15b64';
+    statusEmoji = '🔴 *DOWN*';
+  } else if (isSsl) {
+    color = '#ffb300';
+    statusEmoji = '🟡 *SSL EXPIRING*';
+    titleText = 'SSL Expiration Certificate Warning';
+  }
 
   const slackPayload = {
     attachments: [
       {
-        fallback: `Website status update: ${website.name} is ${isDown ? 'DOWN' : 'UP'}`,
+        fallback: `Website status update: ${website.name} is ${eventType.toUpperCase()}`,
         color: color,
-        pretext: `⚠️ *Uptime Monitoring Status Change*`,
+        pretext: `⚠️ *${titleText}*`,
         title: `${website.name} (${website.url})`,
         title_link: website.url,
         text: `The status of your monitored site has changed to ${statusEmoji}.\n\n*Details:* _${message}_`,
@@ -117,7 +148,7 @@ export const sendSlackAlert = async (webhookUrl: string, website: any, eventType
           },
           {
             title: 'Status',
-            value: isDown ? 'OFFLINE' : 'ONLINE',
+            value: isDown ? 'OFFLINE' : isSsl ? 'SSL WARNING' : 'ONLINE',
             short: true
           }
         ],
@@ -131,7 +162,7 @@ export const sendSlackAlert = async (webhookUrl: string, website: any, eventType
     headers: { 'Content-Type': 'application/json' }
   });
 
-  logger.info(`[Slack Worker] Dispatched webhook incident message for ${website.name}`);
+  logger.info(`[Slack Worker] Dispatched webhook message for ${website.name} (type: ${eventType})`);
 };
 
 // 3. Register the consumer processing logic
