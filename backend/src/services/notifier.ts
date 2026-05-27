@@ -128,7 +128,7 @@ export const sendSlackAlert = async (webhookUrl: string, website: any, eventType
   } else if (isSsl) {
     color = '#ffb300';
     statusEmoji = '🟡 *SSL EXPIRING*';
-    titleText = 'SSL Expiration Certificate Warning';
+    titleText = 'SSL Certificate Expiration Warning';
   }
 
   const slackPayload = {
