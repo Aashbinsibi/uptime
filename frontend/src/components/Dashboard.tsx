@@ -4,7 +4,7 @@ import api from '../utils/api';
 import io from 'socket.io-client';
 import { 
   Activity, Plus, Search, RefreshCw, LogOut, Settings as SettingsIcon, 
-  Trash2, Edit3, Power, Globe, Clock, ShieldAlert, CheckCircle2, ChevronRight, X, Bell 
+  Trash2, Edit3, Power, Globe, Clock, ShieldAlert, CheckCircle2, ChevronRight, X, Bell, Shield 
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -20,6 +20,7 @@ interface Website {
   last_response_time: number | null;
   last_checked_at: string | null;
   last_error_message: string | null;
+  last_ssl_days_remaining: number | null;
 }
 
 const Dashboard: React.FC = () => {
@@ -77,7 +78,8 @@ const Dashboard: React.FC = () => {
               last_status_code: data.statusCode,
               last_response_time: data.responseTime,
               last_checked_at: data.checkedAt,
-              last_error_message: data.errorMessage
+              last_error_message: data.errorMessage,
+              last_ssl_days_remaining: data.sslDaysRemaining
             };
           }
           return w;
@@ -95,7 +97,8 @@ const Dashboard: React.FC = () => {
               last_status_code: data.statusCode,
               last_response_time: data.responseTime,
               last_checked_at: data.checkedAt,
-              last_error_message: data.errorMessage
+              last_error_message: data.errorMessage,
+              last_ssl_days_remaining: data.sslDaysRemaining
             };
           }
           return w;
@@ -431,24 +434,38 @@ const Dashboard: React.FC = () => {
                     </div>
 
                     {/* Middle Latency and check stats */}
-                    <div className="my-5 flex items-baseline space-x-3">
-                      {hasCheck && site.enabled ? (
-                        isUp ? (
-                          <>
-                            <span className="text-xl font-black text-emerald-400 tracking-tight">
-                              {site.last_response_time}
-                            </span>
-                            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">ms Latency</span>
-                          </>
+                    <div className="my-5 flex flex-col space-y-1.5">
+                      <div className="flex items-baseline space-x-3">
+                        {hasCheck && site.enabled ? (
+                          isUp ? (
+                            <>
+                              <span className="text-xl font-black text-emerald-400 tracking-tight">
+                                {site.last_response_time}
+                              </span>
+                              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">ms Latency</span>
+                            </>
+                          ) : (
+                            <div className="text-[10px] text-rose-400 font-medium leading-relaxed truncate" title={site.last_error_message || 'Incident detected'}>
+                              Error: {site.last_error_message || 'HTTP check failure'}
+                            </div>
+                          )
                         ) : (
-                          <div className="text-[10px] text-rose-400 font-medium leading-relaxed truncate" title={site.last_error_message || 'Incident detected'}>
-                            Error: {site.last_error_message || 'HTTP check failure'}
-                          </div>
-                        )
-                      ) : (
-                        <span className="text-sm text-slate-600 font-semibold tracking-wider italic uppercase">
-                          {!site.enabled ? 'Inactive' : 'Polling scheduled...'}
-                        </span>
+                          <span className="text-sm text-slate-600 font-semibold tracking-wider italic uppercase">
+                            {!site.enabled ? 'Inactive' : 'Polling scheduled...'}
+                          </span>
+                        )}
+                      </div>
+
+                      {/* SSL Expiry Telemetry Badge */}
+                      {site.enabled && site.last_ssl_days_remaining !== null && (
+                        <div className="flex items-center space-x-1.5 text-[9px] font-semibold">
+                          <Shield className={`h-3.5 w-3.5 ${
+                            site.last_ssl_days_remaining <= 14 ? 'text-amber-400 animate-pulse' : 'text-slate-500'
+                          }`} />
+                          <span className={site.last_ssl_days_remaining <= 14 ? 'text-amber-400 font-bold' : 'text-slate-400'}>
+                            SSL Expiry: {site.last_ssl_days_remaining} {site.last_ssl_days_remaining === 1 ? 'day' : 'days'} left
+                          </span>
+                        </div>
                       )}
                     </div>
                   </div>

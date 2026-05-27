@@ -29,10 +29,11 @@ router.get('/', requireAuth, async (req: AuthenticatedRequest, res: Response) =>
               r.status_code as last_status_code, 
               r.response_time as last_response_time, 
               r.checked_at as last_checked_at,
-              r.error_message as last_error_message
+              r.error_message as last_error_message,
+              r.ssl_days_remaining as last_ssl_days_remaining
        FROM websites w
        LEFT JOIN LATERAL (
-         SELECT is_up, status_code, response_time, checked_at, error_message
+         SELECT is_up, status_code, response_time, checked_at, error_message, ssl_days_remaining
          FROM check_results
          WHERE website_id = w.id
          ORDER BY checked_at DESC
@@ -68,10 +69,11 @@ router.get('/:id', requireAuth, async (req: AuthenticatedRequest, res: Response)
               r.status_code as last_status_code, 
               r.response_time as last_response_time, 
               r.checked_at as last_checked_at,
-              r.error_message as last_error_message
+              r.error_message as last_error_message,
+              r.ssl_days_remaining as last_ssl_days_remaining
        FROM websites w
        LEFT JOIN LATERAL (
-         SELECT is_up, status_code, response_time, checked_at, error_message
+         SELECT is_up, status_code, response_time, checked_at, error_message, ssl_days_remaining
          FROM check_results
          WHERE website_id = w.id
          ORDER BY checked_at DESC
@@ -282,7 +284,7 @@ router.get('/:id/checks', requireAuth, async (req: AuthenticatedRequest, res: Re
     }
 
     const { rows } = await query(
-      `SELECT id, status_code, response_time, is_up, error_message, checked_at 
+      `SELECT id, status_code, response_time, is_up, error_message, checked_at, ssl_days_remaining 
        FROM check_results 
        WHERE website_id = $1 
        ORDER BY checked_at DESC 
