@@ -1,25 +1,77 @@
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import Auth from './components/Auth';
+import Dashboard from './components/Dashboard';
+import WebsiteDetail from './components/WebsiteDetail';
+import Settings from './components/Settings';
+import Alerts from './components/Alerts';
+import { Activity } from 'lucide-react';
+
+const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#080c14]">
+        <div className="flex flex-col items-center">
+          <Activity className="h-8 w-8 text-emerald-500 animate-spin" />
+          <p className="mt-4 text-xs text-slate-500 tracking-wider">Syncing secure console session...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return user ? <>{children}</> : <Navigate to="/login" replace />;
+};
 
 function App() {
   return (
-    <div className="min-height-screen bg-dark-900 text-white flex flex-col items-center justify-center p-6">
-      <div className="glass-panel p-8 rounded-2xl max-w-md w-full text-center shadow-2xl">
-        <div className="flex justify-center mb-4">
-          <span className="text-5xl animate-pulse">📡</span>
-        </div>
-        <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 bg-clip-text text-transparent">
-          Uptime Monitor
-        </h1>
-        <p className="mt-4 text-gray-400 text-sm">
-          A sleek, private, self-hosted web application to monitor all your endpoints. Real-time metrics coming soon.
-        </p>
-        <div className="mt-6 flex items-center justify-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping"></span>
-          <span className="text-xs font-semibold text-emerald-400 uppercase tracking-widest">
-            System Operational
-          </span>
-        </div>
-      </div>
-    </div>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          {/* Authentication Screen */}
+          <Route path="/login" element={<Auth />} />
+
+          {/* Secure Console Dashboard Routes */}
+          <Route 
+            path="/" 
+            element={
+              <PrivateRoute>
+                <Dashboard />
+              </PrivateRoute>
+            } 
+          />
+          <Route 
+            path="/websites/:id" 
+            element={
+              <PrivateRoute>
+                <WebsiteDetail />
+              </PrivateRoute>
+            } 
+          />
+          <Route 
+            path="/settings" 
+            element={
+              <PrivateRoute>
+                <Settings />
+              </PrivateRoute>
+            } 
+          />
+          <Route 
+            path="/alerts" 
+            element={
+              <PrivateRoute>
+                <Alerts />
+              </PrivateRoute>
+            } 
+          />
+
+          {/* Redirection fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 
