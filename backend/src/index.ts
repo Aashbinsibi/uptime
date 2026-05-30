@@ -14,6 +14,7 @@ import authRouter from './routes/auth';
 import websitesRouter from './routes/websites';
 import settingsRouter from './routes/settings';
 import alertsRouter from './routes/alerts';
+import publicRouter from './routes/public';
 
 // Load environment variables
 dotenv.config();
@@ -72,6 +73,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/websites', websitesRouter);
 app.use('/api/settings', settingsRouter);
 app.use('/api/alerts', alertsRouter);
+app.use('/api/public', publicRouter);
 
 // Root path handler
 app.get('/', (req: Request, res: Response) => {

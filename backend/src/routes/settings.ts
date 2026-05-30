@@ -113,4 +113,65 @@ router.get('/logs', requireAuth, async (req: AuthenticatedRequest, res: Response
   }
 });
 
+// 4. Get public status sharing configuration
+router.get('/public-status', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { rows } = await query(
+      "SELECT value FROM global_settings WHERE key = 'public_status_enabled'"
+    );
+    const enabled = rows.length > 0 ? rows[0].value === true : false;
+    return res.json({
+      success: true,
+      enabled
+    });
+  } catch (error: any) {
+    return res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to fetch public status setting'
+    });
+  }
+});
+
+// 5. Update public status sharing configuration
+router.post('/public-status', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    const { enabled } = req.body;
+
+    if (enabled === undefined || typeof enabled !== 'boolean') {
+      return res.status(400).json({
+        success: false,
+        error: 'Field "enabled" is required and must be a boolean.'
+      });
+    }
+
+    await query(
+      `INSERT INTO global_settings (key, value, updated_at) 
+       VALUES ('public_status_enabled', $1::jsonb, CURRENT_TIMESTAMP) 
+       ON CONFLICT (key) 
+       DO UPDATE SET value = EXCLUDED.value, updated_at = CURRENT_TIMESTAMP`,
+      [JSON.stringify(enabled)]
+    );
+
+    // Log action
+    await query(
+      `INSERT INTO audit_logs (user_id, action, resource, new_value)
+       VALUES ($1, 'update_public_status', 'global_settings', $2)`,
+      [userId, JSON.stringify({ enabled })]
+    );
+
+    return res.json({
+      success: true,
+      message: `Public status listing has been ${enabled ? 'enabled' : 'disabled'} successfully.`,
+      enabled
+    });
+  } catch (error: any) {
+    console.error('[Settings Router] Error updating public status setting:', error);
+    return res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to save public status configuration'
+    });
+  }
+});
+
 export default router;

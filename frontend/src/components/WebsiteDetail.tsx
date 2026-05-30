@@ -6,8 +6,8 @@ import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid 
 } from 'recharts';
 import { 
-  Activity, ArrowLeft, RefreshCw, Clock, ShieldCheck, ShieldAlert, 
-  HelpCircle, Calendar, BarChart2, Server 
+  Activity, ArrowLeft, RefreshCw, ShieldAlert, 
+  Calendar, BarChart2, Server 
 } from 'lucide-react';
 
 interface Website {

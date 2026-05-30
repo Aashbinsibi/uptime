@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { 
-  ArrowLeft, Bell, Clock, ShieldAlert, CheckCircle2, 
-  Eye, RefreshCw, BookmarkCheck, CheckSquare, ShieldCheck, Settings as SettingsIcon
+  ArrowLeft, Bell, Clock, CheckCircle2, 
+  BookMarked, CheckSquare, ShieldCheck
 } from 'lucide-react';
 
 interface AlertItem {
@@ -234,7 +234,7 @@ const Alerts: React.FC = () => {
                             disabled={actioningIds[alert.id]}
                             className="flex items-center space-x-1 py-1.5 px-2.5 bg-slate-900/60 hover:bg-slate-900 text-amber-400 hover:text-amber-300 font-bold rounded-lg text-[10px] border border-white/5 hover:border-amber-500/20 cursor-pointer transition-all disabled:opacity-40"
                           >
-                            <BookmarkCheck className="h-3.5 w-3.5" />
+                            <BookMarked className="h-3.5 w-3.5" />
                             <span>Acknowledge</span>
                           </button>
                         )}

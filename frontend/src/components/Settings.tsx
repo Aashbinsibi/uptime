@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { 
   ArrowLeft, Bell, Slack, Mail, Save, Server, ShieldCheck, 
-  Clock, ToggleLeft, ToggleRight, HelpCircle, CheckCircle2 
+  Clock, ToggleLeft, ToggleRight, CheckCircle2 
 } from 'lucide-react';
 
 interface AlertChannel {
@@ -33,6 +33,7 @@ const Settings: React.FC = () => {
   const [slackUrl, setSlackUrl] = useState('');
   
   const [emailEnabled, setEmailEnabled] = useState(false);
+  const [publicStatusEnabled, setPublicStatusEnabled] = useState(false);
 
   // Status state
   const [loading, setLoading] = useState(true);
@@ -61,6 +62,12 @@ const Settings: React.FC = () => {
         if (email) {
           setEmailEnabled(email.enabled);
         }
+      }
+
+      // Fetch public status config
+      const { data: publicStatusRes } = await api.get('/api/settings/public-status');
+      if (publicStatusRes.success) {
+        setPublicStatusEnabled(publicStatusRes.enabled);
       }
 
       // 2. Fetch audit logs
@@ -103,6 +110,29 @@ const Settings: React.FC = () => {
       }
     } catch (error: any) {
       setSaveErrorMsg(error.response?.data?.error || 'Failed to update alert channel.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Save Public Status Configuration
+  const handleSavePublicStatus = async () => {
+    setSaving(true);
+    setSaveSuccessMsg('');
+    setSaveErrorMsg('');
+
+    try {
+      const { data } = await api.post('/api/settings/public-status', { enabled: publicStatusEnabled });
+      if (data.success) {
+        setSaveSuccessMsg('Public status page visibility updated successfully!');
+        // Refresh logs
+        const { data: logsRes } = await api.get('/api/settings/logs');
+        if (logsRes.success) {
+          setLogs(logsRes.data);
+        }
+      }
+    } catch (error: any) {
+      setSaveErrorMsg(error.response?.data?.error || 'Failed to update public status setting.');
     } finally {
       setSaving(false);
     }
@@ -260,6 +290,53 @@ const Settings: React.FC = () => {
               >
                 <Save className="h-3.5 w-3.5" />
                 <span>Save Email Status</span>
+              </button>
+            </div>
+          </div>
+
+          {/* 3. Public Uptime Sharing configuration card */}
+          <div className="glass-panel rounded-2xl p-6 relative overflow-hidden">
+            <div className="flex justify-between items-start mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="p-3 bg-blue-500/10 rounded-xl border border-blue-500/20">
+                  <Server className="h-5 w-5 text-blue-400" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-white uppercase tracking-wider">Public Uptime Sharing</h3>
+                  <p className="text-[10px] text-slate-500 mt-0.5">Allows non-authenticated users to view website status on the login page.</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setPublicStatusEnabled(!publicStatusEnabled)}
+                className="flex items-center focus:outline-none cursor-pointer"
+              >
+                {publicStatusEnabled ? (
+                  <ToggleRight className="h-9 w-9 text-emerald-500" />
+                ) : (
+                  <ToggleLeft className="h-9 w-9 text-slate-600" />
+                )}
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div className="p-4 rounded-xl border border-white/5 bg-slate-950/20 leading-relaxed text-xs">
+                <p className="text-slate-300 font-semibold mb-1">Status: {publicStatusEnabled ? 'Publicly Enabled' : 'Privately Restricted'}</p>
+                <p className="text-slate-500 text-[10px]">
+                  {publicStatusEnabled 
+                    ? "Anyone visiting the sign-in page will be able to see the names and current status (ONLINE/OFFLINE) of all active monitored websites. No detailed metrics or history will be shared."
+                    : "Guest users will see a standard login portal. The list of websites is private and requires authentication to view."}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-4 mt-4 border-t border-white/5">
+              <button
+                onClick={handleSavePublicStatus}
+                disabled={saving}
+                className="flex items-center space-x-1.5 py-1.5 px-4 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-slate-950 font-bold rounded-xl text-xs cursor-pointer disabled:opacity-40 transition-colors"
+              >
+                <Save className="h-3.5 w-3.5" />
+                <span>Save Public Share Settings</span>
               </button>
             </div>
           </div>
