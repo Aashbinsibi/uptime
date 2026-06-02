@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Activity, ShieldCheck, Mail, Lock, Server, ArrowRight } from 'lucide-react';
+import { Activity, ShieldCheck, Mail, Lock, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import api from '../utils/api';
 
 const Auth: React.FC = () => {
   const { user, login, register, isSetupRequired, loading, refreshSetupStatus } = useAuth();
@@ -14,6 +15,10 @@ const Auth: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const navigate = useNavigate();
 
+  // Public status sharing state
+  const [publicNodes, setPublicNodes] = useState<any[]>([]);
+  const [publicEnabled, setPublicEnabled] = useState(false);
+
   useEffect(() => {
     // If already logged in, send to dashboard!
     if (user) {
@@ -25,12 +30,27 @@ const Auth: React.FC = () => {
     // Set view based on setup requirements
     if (isSetupRequired) {
       setIsRegistering(true);
-      setInfoMsg('Welcome! As this is the first run, please configure your administrator account to secure this installation.');
+      setInfoMsg('Initial Setup Mode: Please register the administrative controller.');
     } else {
       setIsRegistering(false);
       setInfoMsg('');
     }
   }, [isSetupRequired]);
+
+  useEffect(() => {
+    const fetchPublicStatus = async () => {
+      try {
+        const { data } = await api.get('/api/public/status');
+        if (data.success) {
+          setPublicEnabled(data.enabled);
+          setPublicNodes(data.data);
+        }
+      } catch (err) {
+        console.error('[Public Status] Failed to fetch:', err);
+      }
+    };
+    fetchPublicStatus();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -101,16 +121,38 @@ const Auth: React.FC = () => {
             </span>
           </div>
 
-          <div className="my-8">
-            <h1 className="text-3xl font-extrabold leading-tight text-white mb-4">
+          <div className="my-4">
+            <h1 className="text-3xl font-extrabold leading-tight text-white mb-3">
               Real-Time Node <br />Availability Tracking.
             </h1>
-            <p className="text-slate-400 text-sm leading-relaxed max-w-xs">
+            <p className="text-slate-400 text-xs leading-relaxed max-w-xs">
               Monitor response times, analyze SSL health, and receive instant alert notifications during website downtime events.
             </p>
           </div>
 
-          <div className="flex items-center space-x-3 text-xs text-slate-500 bg-slate-900/40 p-3.5 rounded-lg border border-white/5">
+          {publicEnabled && publicNodes.length > 0 && (
+            <div className="mb-6 flex-grow overflow-hidden flex flex-col max-h-[220px]">
+              <h3 className="text-[10px] font-bold text-white uppercase tracking-wider mb-2">Live Node Availability</h3>
+              <div className="flex-grow overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                {publicNodes.map((node) => (
+                  <div key={node.id} className="flex justify-between items-center p-2 rounded-xl bg-slate-950/30 border border-white/5 text-xs">
+                    <span className="text-slate-300 font-medium truncate max-w-[160px]">{node.name}</span>
+                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold ${
+                      node.is_up === true 
+                        ? 'bg-emerald-500/10 text-emerald-400' 
+                        : node.is_up === false 
+                        ? 'bg-rose-500/10 text-rose-400' 
+                        : 'bg-slate-800 text-slate-400'
+                    }`}>
+                      {node.is_up === true ? 'ONLINE' : node.is_up === false ? 'OFFLINE' : 'PENDING'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="flex items-center space-x-3 text-xs text-slate-500 bg-slate-900/40 p-3.5 rounded-lg border border-white/5 mt-auto">
             <ShieldCheck className="h-4.5 w-4.5 text-emerald-500 flex-shrink-0" />
             <span>Encrypted credentials & secure cookie sessions.</span>
           </div>
@@ -223,6 +265,29 @@ const Auth: React.FC = () => {
             >
               Back to Login
             </button>
+          )}
+
+          {/* Public Status List for Mobile at the bottom of forms */}
+          {publicEnabled && publicNodes.length > 0 && (
+            <div className="mt-6 pt-5 border-t border-white/5 md:hidden">
+              <h3 className="text-[10px] font-bold text-white uppercase tracking-wider mb-2">Live Node Status</h3>
+              <div className="grid grid-cols-1 gap-2 max-h-[140px] overflow-y-auto pr-1">
+                {publicNodes.map((node) => (
+                  <div key={node.id} className="flex justify-between items-center p-2 rounded-xl bg-slate-950/30 border border-white/5 text-xs">
+                    <span className="text-slate-300 font-medium truncate max-w-[180px]">{node.name}</span>
+                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold ${
+                      node.is_up === true 
+                        ? 'bg-emerald-500/10 text-emerald-400' 
+                        : node.is_up === false 
+                        ? 'bg-rose-500/10 text-rose-400' 
+                        : 'bg-slate-800 text-slate-400'
+                    }`}>
+                      {node.is_up === true ? 'ONLINE' : node.is_up === false ? 'OFFLINE' : 'PENDING'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
           )}
         </div>
       </div>

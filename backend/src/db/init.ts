@@ -100,6 +100,23 @@ export const initDb = async () => {
       );
     `);
 
+    // 8. Create Global Settings Table
+    await query(`
+      CREATE TABLE IF NOT EXISTS global_settings (
+        key VARCHAR(255) PRIMARY KEY,
+        value JSONB DEFAULT '{}'::jsonb NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL
+      );
+    `);
+
+    // Seed default public status config if not exists
+    await query(`
+      INSERT INTO global_settings (key, value)
+      VALUES ('public_status_enabled', 'false'::jsonb)
+      ON CONFLICT (key) DO NOTHING;
+    `);
+
     console.log('[Database Init] Database schema initialized successfully!');
   } catch (error) {
     console.error('[Database Init] Critical error initializing database:', error);
