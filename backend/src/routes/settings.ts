@@ -1,6 +1,7 @@
 import { Router, Response } from 'express';
 import { query } from '../db';
 import { requireAuth, AuthenticatedRequest } from '../middleware/auth';
+import { sendSlackAlert, sendTeamsAlert, sendEmailAlert } from '../services/notifier';
 
 const router = Router();
 
@@ -31,10 +32,10 @@ router.post('/channels', requireAuth, async (req: AuthenticatedRequest, res: Res
     const userId = req.user?.id;
     const { type, config, enabled } = req.body; // type = 'slack' | 'email'
 
-    if (!type || !['slack', 'email'].includes(type)) {
+    if (!type || !['slack', 'email', 'teams'].includes(type)) {
       return res.status(400).json({
         success: false,
-        error: 'Invalid channel type. Supported: slack, email'
+        error: 'Invalid channel type. Supported: slack, email, teams'
       });
     }
 
@@ -170,6 +171,51 @@ router.post('/public-status', requireAuth, async (req: AuthenticatedRequest, res
     return res.status(500).json({
       success: false,
       error: error.message || 'Failed to save public status configuration'
+    });
+  }
+});
+
+// 6. Send test notification
+router.post('/channels/test', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const userId = req.user?.id;
+    const { type, config } = req.body;
+
+    if (!type || !['slack', 'email', 'teams'].includes(type)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid channel type. Supported: slack, email, teams'
+      });
+    }
+
+    const testWebsite = {
+      name: 'Uptime Monitor Probe Test',
+      url: 'https://example.com',
+      user_id: userId
+    };
+    const testMessage = 'This is a manual test notification to confirm your alert channel settings are working correctly.';
+
+    if (type === 'slack') {
+      const webhookUrl = config?.webhookUrl;
+      if (!webhookUrl) return res.status(400).json({ success: false, error: 'Slack Webhook URL is required' });
+      await sendSlackAlert(webhookUrl, testWebsite, 'down', testMessage);
+    } else if (type === 'teams') {
+      const webhookUrl = config?.webhookUrl;
+      if (!webhookUrl) return res.status(400).json({ success: false, error: 'Teams Webhook URL is required' });
+      await sendTeamsAlert(webhookUrl, testWebsite, 'down', testMessage);
+    } else if (type === 'email') {
+      await sendEmailAlert(testWebsite, 'down', testMessage);
+    }
+
+    return res.json({
+      success: true,
+      message: `Test alert dispatched successfully for ${type.toUpperCase()}!`
+    });
+  } catch (error: any) {
+    console.error('[Settings Router] Error sending test notification:', error);
+    return res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to dispatch test notification'
     });
   }
 });

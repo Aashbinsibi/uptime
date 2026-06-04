@@ -38,13 +38,13 @@ notificationQueue.on('completed', (job) => {
 });
 
 // Worker handler: will be registered dynamically to prevent circular dependencies
-export const startQueueWorker = (processor: (job: Queue.Job) => Promise<void>) => {
-  logger.info('[Bull Queue] Registering background consumer worker process...');
-  notificationQueue.process(async (job) => {
+export const registerQueueProcessor = (name: string, processor: (job: Queue.Job) => Promise<void>) => {
+  logger.info(`[Bull Queue] Registering background consumer worker process for job type: ${name}...`);
+  notificationQueue.process(name, async (job) => {
     try {
       await processor(job);
     } catch (error: any) {
-      logger.error(`[Bull Queue] Process failure in worker on job #${job.id}:`, { error: error.message });
+      logger.error(`[Bull Queue] Process failure in worker on job #${job.id} (${name}):`, { error: error.message });
       throw error; // Propagate error so Bull schedules retry backoff
     }
   });

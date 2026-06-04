@@ -3,12 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { 
   ArrowLeft, Bell, Slack, Mail, Save, Server, ShieldCheck, 
-  Clock, ToggleLeft, ToggleRight, CheckCircle2 
+  Clock, ToggleLeft, ToggleRight, CheckCircle2, MessageSquare
 } from 'lucide-react';
 
 interface AlertChannel {
   id?: string;
-  type: 'slack' | 'email';
+  type: 'slack' | 'email' | 'teams';
   config: {
     webhookUrl?: string;
   };
@@ -31,6 +31,9 @@ const Settings: React.FC = () => {
   // Settings state
   const [slackEnabled, setSlackEnabled] = useState(false);
   const [slackUrl, setSlackUrl] = useState('');
+  
+  const [teamsEnabled, setTeamsEnabled] = useState(false);
+  const [teamsUrl, setTeamsUrl] = useState('');
   
   const [emailEnabled, setEmailEnabled] = useState(false);
   const [publicStatusEnabled, setPublicStatusEnabled] = useState(false);
@@ -56,6 +59,12 @@ const Settings: React.FC = () => {
         if (slack) {
           setSlackEnabled(slack.enabled);
           setSlackUrl(slack.config.webhookUrl || '');
+        }
+
+        const teams = channels.find(c => c.type === 'teams');
+        if (teams) {
+          setTeamsEnabled(teams.enabled);
+          setTeamsUrl(teams.config.webhookUrl || '');
         }
 
         const email = channels.find(c => c.type === 'email');
@@ -87,7 +96,7 @@ const Settings: React.FC = () => {
   }, []);
 
   // Save Channel Configurations
-  const handleSaveChannel = async (type: 'slack' | 'email') => {
+  const handleSaveChannel = async (type: 'slack' | 'email' | 'teams') => {
     setSaving(true);
     setSaveSuccessMsg('');
     setSaveErrorMsg('');
@@ -95,13 +104,19 @@ const Settings: React.FC = () => {
     try {
       const payload = {
         type,
-        enabled: type === 'slack' ? slackEnabled : emailEnabled,
-        config: type === 'slack' ? { webhookUrl: slackUrl } : {}
+        enabled: type === 'slack' ? slackEnabled : type === 'teams' ? teamsEnabled : emailEnabled,
+        config: (type === 'slack' || type === 'teams') ? { webhookUrl: type === 'slack' ? slackUrl : teamsUrl } : {}
       };
 
       const { data } = await api.post('/api/settings/channels', payload);
       if (data.success) {
-        setSaveSuccessMsg(`${type === 'slack' ? 'Slack Webhook' : 'Email channel'} saved successfully!`);
+        setSaveSuccessMsg(
+          type === 'slack' 
+            ? 'Slack Webhook saved successfully!' 
+            : type === 'teams' 
+              ? 'Microsoft Teams Webhook saved successfully!' 
+              : 'Email channel saved successfully!'
+        );
         // Refresh logs to show updated settings log item
         const { data: logsRes } = await api.get('/api/settings/logs');
         if (logsRes.success) {
@@ -110,6 +125,30 @@ const Settings: React.FC = () => {
       }
     } catch (error: any) {
       setSaveErrorMsg(error.response?.data?.error || 'Failed to update alert channel.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Test Channel Configurations
+  const handleTestChannel = async (type: 'slack' | 'email' | 'teams') => {
+    setSaving(true);
+    setSaveSuccessMsg('');
+    setSaveErrorMsg('');
+
+    try {
+      const config = (type === 'slack' || type === 'teams') ? { webhookUrl: type === 'slack' ? slackUrl : teamsUrl } : {};
+
+      const { data } = await api.post('/api/settings/channels/test', {
+        type,
+        config
+      });
+
+      if (data.success) {
+        setSaveSuccessMsg(data.message || `Test alert sent successfully for ${type}!`);
+      }
+    } catch (error: any) {
+      setSaveErrorMsg(error.response?.data?.error || `Failed to send test alert for ${type}.`);
     } finally {
       setSaving(false);
     }
@@ -238,7 +277,15 @@ const Settings: React.FC = () => {
                 />
               </div>
 
-              <div className="flex justify-end pt-2">
+              <div className="flex justify-end pt-2 space-x-3">
+                <button
+                  type="button"
+                  onClick={() => handleTestChannel('slack')}
+                  disabled={saving || !slackUrl}
+                  className="flex items-center space-x-1.5 py-1.5 px-4 bg-slate-800 hover:bg-slate-700 active:bg-slate-600 text-slate-300 font-semibold rounded-xl text-xs cursor-pointer disabled:opacity-40 transition-colors"
+                >
+                  <span>Test Channel</span>
+                </button>
                 <button
                   onClick={() => handleSaveChannel('slack')}
                   disabled={saving || (slackEnabled && !slackUrl)}
@@ -250,6 +297,69 @@ const Settings: React.FC = () => {
               </div>
             </div>
           </div>
+
+          {/* Teams Webhook configuration card */}
+          <div className="glass-panel rounded-2xl p-6 relative overflow-hidden">
+            <div className="flex justify-between items-start mb-6">
+              <div className="flex items-center space-x-3">
+                <div className="p-3 bg-[#4b53bc]/10 rounded-xl border border-[#4b53bc]/20">
+                  <MessageSquare className="h-5.5 w-5.5 text-[#4b53bc]" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-white">Microsoft Teams Webhook alerts</h3>
+                  <p className="text-[10px] text-slate-500 mt-0.5">Sends formatted Message Cards directly into a Microsoft Teams channel.</p>
+                </div>
+              </div>
+
+              {/* Toggle switch */}
+              <button
+                onClick={() => setTeamsEnabled(prev => !prev)}
+                className="text-slate-400 hover:text-white cursor-pointer transition-colors"
+              >
+                {teamsEnabled ? (
+                  <ToggleRight className="h-7 w-7 text-emerald-500" />
+                ) : (
+                  <ToggleLeft className="h-7 w-7 text-slate-600" />
+                )}
+              </button>
+            </div>
+
+            {/* Config inputs (shows only when toggled) */}
+            <div className="space-y-4 pt-2">
+              <div className="space-y-1.5">
+                <label className="text-xs text-slate-400 font-medium block">Incoming Webhook URL</label>
+                <input
+                  type="url"
+                  value={teamsUrl}
+                  onChange={(e) => setTeamsUrl(e.target.value)}
+                  placeholder="https://YOUR_ORGANIZATION.webhook.office.com/webhookb2/YOUR_WEBHOOK_DETAILS"
+                  className="w-full bg-[#080c14] border border-white/5 rounded-xl py-2 px-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
+                  disabled={!teamsEnabled || saving}
+                />
+              </div>
+
+              <div className="flex justify-end pt-2 space-x-3">
+                <button
+                  type="button"
+                  onClick={() => handleTestChannel('teams')}
+                  disabled={saving || !teamsUrl}
+                  className="flex items-center space-x-1.5 py-1.5 px-4 bg-slate-800 hover:bg-slate-700 active:bg-slate-600 text-slate-300 font-semibold rounded-xl text-xs cursor-pointer disabled:opacity-40 transition-colors"
+                >
+                  <span>Test Channel</span>
+                </button>
+                <button
+                  onClick={() => handleSaveChannel('teams')}
+                  disabled={saving || (teamsEnabled && !teamsUrl)}
+                  className="flex items-center space-x-1.5 py-1.5 px-4 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-slate-950 font-bold rounded-xl text-xs cursor-pointer disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                >
+                  <Save className="h-3.5 w-3.5" />
+                  <span>Save Teams Config</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+
 
           {/* 2. Email alert channels configuration card */}
           <div className="glass-panel rounded-2xl p-6 relative overflow-hidden">
@@ -282,7 +392,15 @@ const Settings: React.FC = () => {
               Emails will be dispatched to your environment account address: <span className="text-slate-300 font-semibold">{import.meta.env.VITE_SMTP_USER || 'configured in backend .env'}</span>. Change the SMTP login values inside the backend configurations to adjust this routing.
             </div>
 
-            <div className="flex justify-end pt-4 mt-2 border-t border-white/5">
+            <div className="flex justify-end pt-4 mt-2 border-t border-white/5 space-x-3">
+              <button
+                type="button"
+                onClick={() => handleTestChannel('email')}
+                disabled={saving}
+                className="flex items-center space-x-1.5 py-1.5 px-4 bg-slate-800 hover:bg-slate-700 active:bg-slate-600 text-slate-300 font-semibold rounded-xl text-xs cursor-pointer disabled:opacity-40 transition-colors"
+              >
+                <span>Test Channel</span>
+              </button>
               <button
                 onClick={() => handleSaveChannel('email')}
                 disabled={saving}
