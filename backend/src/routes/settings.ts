@@ -2,6 +2,101 @@ import { Router, Response } from 'express';
 import { query } from '../db';
 import { requireAuth, AuthenticatedRequest } from '../middleware/auth';
 import { sendSlackAlert, sendTeamsAlert, sendEmailAlert } from '../services/notifier';
+import { promisify } from 'util';
+import { lookup } from 'dns';
+
+const dnsLookup = promisify(lookup);
+
+/**
+ * Check if IP address is in a private, loopback, or link-local range
+ */
+function isRestrictedIP(address: string): boolean {
+  // IPv4 checks
+  const ipv4Parts = address.split('.');
+  if (ipv4Parts.length === 4) {
+    const parts = ipv4Parts.map(Number);
+    if (isNaN(parts[0]) || isNaN(parts[1]) || isNaN(parts[2]) || isNaN(parts[3])) {
+      return false;
+    }
+    // 127.0.0.0/8 - Loopback
+    if (parts[0] === 127) return true;
+    // 10.0.0.0/8 - Private
+    if (parts[0] === 10) return true;
+    // 172.16.0.0/12 - Private
+    if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return true;
+    // 192.168.0.0/16 - Private
+    if (parts[0] === 192 && parts[1] === 168) return true;
+    // 169.254.0.0/16 - Link-local
+    if (parts[0] === 169 && parts[1] === 254) return true;
+    // 0.0.0.0/8 - Current network
+    if (parts[0] === 0) return true;
+  }
+
+  // IPv6 checks
+  if (address.includes(':')) {
+    // ::1 - Loopback
+    if (address === '::1') return true;
+    // fe80::/10 - Link-local
+    if (address.startsWith('fe80:')) return true;
+    // fc00::/7 - Unique local
+    if (address.startsWith('fc') || address.startsWith('fd')) return true;
+  }
+
+  return false;
+}
+
+/**
+ * Validate webhook URL for security: HTTPS, hostname restrictions, no private IPs
+ */
+async function isValidWebhookUrl(urlStr: string, type: 'slack' | 'teams'): Promise<{ valid: boolean; error?: string }> {
+  try {
+    // Parse URL
+    const url = new URL(urlStr);
+
+    // Enforce HTTPS
+    if (url.protocol !== 'https:') {
+      return { valid: false, error: 'Webhook URL must use HTTPS protocol' };
+    }
+
+    const hostname = url.hostname;
+
+    // Validate hostname based on type
+    if (type === 'slack') {
+      if (!hostname.endsWith('hooks.slack.com')) {
+        return { valid: false, error: 'Slack webhook must be from hooks.slack.com' };
+      }
+    } else if (type === 'teams') {
+      const isValidTeamsHost =
+        hostname.endsWith('webhook.office.com') ||
+        hostname.endsWith('outlook.office.com') ||
+        hostname.endsWith('outlook.office365.com') ||
+        hostname.endsWith('logic.azure.com') ||
+        hostname.endsWith('logic.office.com') ||
+        hostname.endsWith('powerplatform.com');
+      if (!isValidTeamsHost) {
+        return {
+          valid: false,
+          error: 'Teams webhook must be from a valid Microsoft Teams or Power Automate domain'
+        };
+      }
+    }
+
+    // Resolve hostname to IP and check if it's private/loopback/link-local
+    try {
+      const { address } = await dnsLookup(hostname);
+
+      if (isRestrictedIP(address)) {
+        return { valid: false, error: 'Webhook URL resolves to a private or restricted IP range' };
+      }
+    } catch (dnsError) {
+      return { valid: false, error: 'Unable to resolve webhook URL hostname' };
+    }
+
+    return { valid: true };
+  } catch (error: any) {
+    return { valid: false, error: error.message || 'Invalid webhook URL format' };
+  }
+}
 
 const router = Router();
 
@@ -44,6 +139,17 @@ router.post('/channels', requireAuth, async (req: AuthenticatedRequest, res: Res
       'SELECT id FROM alert_channels WHERE user_id = $1 AND type = $2',
       [userId, type]
     );
+
+    // Validate webhook URL if provided for Slack or Teams
+    if ((type === 'slack' || type === 'teams') && config?.webhookUrl) {
+      const validation = await isValidWebhookUrl(config.webhookUrl, type);
+      if (!validation.valid) {
+        return res.status(400).json({
+          success: false,
+          error: validation.error || 'Invalid webhook URL'
+        });
+      }
+    }
 
     let resultChannel;
 
@@ -198,10 +304,24 @@ router.post('/channels/test', requireAuth, async (req: AuthenticatedRequest, res
     if (type === 'slack') {
       const webhookUrl = config?.webhookUrl;
       if (!webhookUrl) return res.status(400).json({ success: false, error: 'Slack Webhook URL is required' });
+      
+      // Validate webhook URL before sending
+      const validation = await isValidWebhookUrl(webhookUrl, 'slack');
+      if (!validation.valid) {
+        return res.status(400).json({ success: false, error: validation.error || 'Invalid Slack webhook URL' });
+      }
+      
       await sendSlackAlert(webhookUrl, testWebsite, 'down', testMessage);
     } else if (type === 'teams') {
       const webhookUrl = config?.webhookUrl;
       if (!webhookUrl) return res.status(400).json({ success: false, error: 'Teams Webhook URL is required' });
+      
+      // Validate webhook URL before sending
+      const validation = await isValidWebhookUrl(webhookUrl, 'teams');
+      if (!validation.valid) {
+        return res.status(400).json({ success: false, error: validation.error || 'Invalid Teams webhook URL' });
+      }
+      
       await sendTeamsAlert(webhookUrl, testWebsite, 'down', testMessage);
     } else if (type === 'email') {
       await sendEmailAlert(testWebsite, 'down', testMessage);
