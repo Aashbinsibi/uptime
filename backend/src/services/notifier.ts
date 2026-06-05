@@ -1,7 +1,7 @@
 import nodemailer from 'nodemailer';
 import axios from 'axios';
 import { query } from '../db';
-import { notificationQueue, startQueueWorker } from './queue';
+import { notificationQueue, registerQueueProcessor } from './queue';
 import logger from './logger';
 
 // SMTP Transporter configuration
@@ -18,7 +18,7 @@ const getEmailTransporter = () => {
 };
 
 // 1. Refactored Trigger: Enqueues jobs instead of executing HTTP/SMTP calls synchronously
-export const triggerNotifications = async (website: any, eventType: 'down' | 'resolved', message: string) => {
+export const triggerNotifications = async (website: any, eventType: 'down' | 'resolved' | 'ssl_expiring', message: string) => {
   try {
     const userId = website.user_id;
 
@@ -30,6 +30,7 @@ export const triggerNotifications = async (website: any, eventType: 'down' | 're
 
     const emailEnabled = channels.some(c => c.type === 'email');
     const slackChannel = channels.find(c => c.type === 'slack');
+    const teamsChannel = channels.find(c => c.type === 'teams');
 
     // Queue email job
     if (emailEnabled) {
@@ -58,6 +59,24 @@ export const triggerNotifications = async (website: any, eventType: 'down' | 're
         }
       }
     }
+
+    // Queue Teams job
+    if (teamsChannel) {
+      const webhookUrl = teamsChannel.config.webhookUrl;
+      if (webhookUrl) {
+        await notificationQueue.add('teams', {
+          webhookUrl,
+          website,
+          eventType,
+          message
+        });
+        if (process.env.NODE_ENV === 'development') {
+          logger.info(`[Notifier] Enqueued Teams webhook alert job for ${website.name}`);
+        }
+      }
+    }
+
+
   } catch (error: any) {
     logger.error('[Notifier] Error enqueuing alert notifications:', { error: error.message });
   }
@@ -165,16 +184,95 @@ export const sendSlackAlert = async (webhookUrl: string, website: any, eventType
   logger.info(`[Slack Worker] Dispatched webhook message for ${website.name} (type: ${eventType})`);
 };
 
+export const sendTeamsAlert = async (webhookUrl: string, website: any, eventType: 'down' | 'resolved' | 'ssl_expiring', message: string) => {
+  const isDown = eventType === 'down';
+  const isSsl = eventType === 'ssl_expiring';
+
+  let themeColor = '2E7D32'; // Green
+  let statusEmoji = '🟢 UP';
+  let titleText = 'Uptime Monitoring Status Change';
+
+  if (isDown) {
+    themeColor = 'D32F2F'; // Red
+    statusEmoji = '🔴 DOWN';
+  } else if (isSsl) {
+    themeColor = 'FBC02D'; // Amber
+    statusEmoji = '🟡 SSL EXPIRING';
+    titleText = 'SSL Certificate Expiration Warning';
+  }
+
+  const textContent = `The status of your monitored site has changed to **${statusEmoji}**.\n\n**Website:** [${website.name}](${website.url})\n**URL:** ${website.url}\n**Check Time:** ${new Date().toLocaleString()}\n**Details:** ${message}`;
+
+  const teamsPayload = {
+    "@type": "MessageCard",
+    "@context": "http://schema.org/extensions",
+    "themeColor": themeColor,
+    "summary": `Website status update: ${website.name} is ${eventType.toUpperCase()}`,
+    "title": `⚠️ ${titleText}`,
+    "text": textContent, // Critical for modern Teams Workflows that pull messages from a top-level text property
+    "sections": [
+      {
+        "activityTitle": `**${website.name}** (${website.url})`,
+        "activitySubtitle": `The status of your monitored site has changed to **${statusEmoji}**.`,
+        "facts": [
+          {
+            "name": "Check Time",
+            "value": new Date().toLocaleString()
+          },
+          {
+            "name": "Status",
+            "value": isDown ? "OFFLINE" : isSsl ? "SSL WARNING" : "ONLINE"
+          },
+          {
+            "name": "Details",
+            "value": message
+          }
+        ],
+        "markdown": true
+      }
+    ],
+    "potentialAction": [
+      {
+        "@type": "OpenUri",
+        "name": "Visit Website",
+        "targets": [
+          {
+            "os": "default",
+            "uri": website.url
+          }
+        ]
+      }
+    ]
+  };
+
+  try {
+    await axios.post(webhookUrl, teamsPayload, {
+      headers: { 'Content-Type': 'application/json' }
+    });
+    logger.info(`[Teams Worker] Dispatched webhook message for ${website.name} (type: ${eventType})`);
+  } catch (error: any) {
+    logger.error(`[Teams Worker] Failed to dispatch webhook message for ${website.name}:`, {
+      message: error.message,
+      response: error.response?.data
+    });
+    throw error; // Re-throw to trigger Bull queue retry mechanism
+  }
+};
+
 // 3. Register the consumer processing logic
 export const initNotificationWorker = () => {
-  startQueueWorker(async (job) => {
-    const { name, data } = job;
-    if (name === 'email') {
-      await sendEmailAlert(data.website, data.eventType, data.message);
-    } else if (name === 'slack') {
-      await sendSlackAlert(data.webhookUrl, data.website, data.eventType, data.message);
-    } else {
-      logger.warn(`[Bull Worker] Unknown job type received: ${name}`);
-    }
+  registerQueueProcessor('email', async (job) => {
+    const { website, eventType, message } = job.data;
+    await sendEmailAlert(website, eventType, message);
+  });
+
+  registerQueueProcessor('slack', async (job) => {
+    const { webhookUrl, website, eventType, message } = job.data;
+    await sendSlackAlert(webhookUrl, website, eventType, message);
+  });
+
+  registerQueueProcessor('teams', async (job) => {
+    const { webhookUrl, website, eventType, message } = job.data;
+    await sendTeamsAlert(webhookUrl, website, eventType, message);
   });
 };
