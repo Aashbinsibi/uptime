@@ -10,7 +10,7 @@ const dnsLookup = promisify(lookup);
 /**
  * Check if IP address is in a private, loopback, or link-local range
  */
-function isRestrictedIP(address: string): boolean {
+export function isRestrictedIP(address: string): boolean {
   // IPv4 checks
   const ipv4Parts = address.split('.');
   if (ipv4Parts.length === 4) {
@@ -48,7 +48,7 @@ function isRestrictedIP(address: string): boolean {
 /**
  * Validate webhook URL for security: HTTPS, hostname restrictions, no private IPs
  */
-async function isValidWebhookUrl(urlStr: string, type: 'slack' | 'teams'): Promise<{ valid: boolean; error?: string }> {
+export async function isValidWebhookUrl(urlStr: string, type: 'slack' | 'teams'): Promise<{ valid: boolean; error?: string }> {
   try {
     // Parse URL
     const url = new URL(urlStr);
