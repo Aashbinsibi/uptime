@@ -1,6 +1,6 @@
 import { Router, Response } from 'express';
 import { query } from '../db';
-import { requireAuth, AuthenticatedRequest } from '../middleware/auth';
+import { requireAuth, requireAdmin, requireWriter, AuthenticatedRequest } from '../middleware/auth';
 import { sendSlackAlert, sendTeamsAlert, sendEmailAlert } from '../services/notifier';
 import { promisify } from 'util';
 import { lookup } from 'dns';
@@ -122,7 +122,7 @@ router.get('/channels', requireAuth, async (req: AuthenticatedRequest, res: Resp
 });
 
 // 2. Configure / Save alert channel (Slack Webhook or Email enablement)
-router.post('/channels', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+router.post('/channels', requireWriter, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user?.id;
     const { type, config, enabled } = req.body; // type = 'slack' | 'email'
@@ -223,10 +223,12 @@ router.get('/logs', requireAuth, async (req: AuthenticatedRequest, res: Response
 // 4. Get public status sharing configuration
 router.get('/public-status', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
   try {
+    const userId = req.user?.id;
     const { rows } = await query(
-      "SELECT value FROM global_settings WHERE key = 'public_status_enabled'"
+      "SELECT public_sharing_enabled FROM users WHERE id = $1",
+      [userId]
     );
-    const enabled = rows.length > 0 ? rows[0].value === true : false;
+    const enabled = rows.length > 0 ? rows[0].public_sharing_enabled === true : false;
     return res.json({
       success: true,
       enabled
@@ -240,7 +242,7 @@ router.get('/public-status', requireAuth, async (req: AuthenticatedRequest, res:
 });
 
 // 5. Update public status sharing configuration
-router.post('/public-status', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+router.post('/public-status', requireWriter, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user?.id;
     const { enabled } = req.body;
@@ -253,23 +255,20 @@ router.post('/public-status', requireAuth, async (req: AuthenticatedRequest, res
     }
 
     await query(
-      `INSERT INTO global_settings (key, value, updated_at) 
-       VALUES ('public_status_enabled', $1::jsonb, CURRENT_TIMESTAMP) 
-       ON CONFLICT (key) 
-       DO UPDATE SET value = EXCLUDED.value, updated_at = CURRENT_TIMESTAMP`,
-      [JSON.stringify(enabled)]
+      "UPDATE users SET public_sharing_enabled = $1 WHERE id = $2",
+      [enabled, userId]
     );
 
     // Log action
     await query(
       `INSERT INTO audit_logs (user_id, action, resource, new_value)
-       VALUES ($1, 'update_public_status', 'global_settings', $2)`,
+       VALUES ($1, 'update_public_status', 'users', $2)`,
       [userId, JSON.stringify({ enabled })]
     );
 
     return res.json({
       success: true,
-      message: `Public status listing has been ${enabled ? 'enabled' : 'disabled'} successfully.`,
+      message: `Your public status sharing preference has been ${enabled ? 'enabled' : 'disabled'} successfully.`,
       enabled
     });
   } catch (error: any) {
@@ -282,7 +281,7 @@ router.post('/public-status', requireAuth, async (req: AuthenticatedRequest, res
 });
 
 // 6. Send test notification
-router.post('/channels/test', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+router.post('/channels/test', requireWriter, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user?.id;
     const { type, config } = req.body;

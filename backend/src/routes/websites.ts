@@ -1,7 +1,7 @@
 import { Router, Response } from 'express';
 import { z } from 'zod';
 import { query } from '../db';
-import { requireAuth, AuthenticatedRequest } from '../middleware/auth';
+import { requireAuth, requireWriter, AuthenticatedRequest } from '../middleware/auth';
 import { performSingleCheck } from '../services/monitor';
 
 const router = Router();
@@ -103,7 +103,7 @@ router.get('/:id', requireAuth, async (req: AuthenticatedRequest, res: Response)
 });
 
 // 3. Create a new website
-router.post('/', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+router.post('/', requireWriter, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user?.id;
     const validated = WebsiteCreateSchema.parse(req.body);
@@ -154,7 +154,7 @@ router.post('/', requireAuth, async (req: AuthenticatedRequest, res: Response) =
 });
 
 // 4. Update website
-router.put('/:id', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+router.put('/:id', requireWriter, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user?.id;
     const { id } = req.params;
@@ -225,7 +225,7 @@ router.put('/:id', requireAuth, async (req: AuthenticatedRequest, res: Response)
 });
 
 // 5. Delete website
-router.delete('/:id', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+router.delete('/:id', requireWriter, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user?.id;
     const { id } = req.params;
@@ -367,7 +367,7 @@ router.get('/:id/stats', requireAuth, async (req: AuthenticatedRequest, res: Res
 });
 
 // 8. Trigger manual check
-router.post('/:id/check', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+router.post('/:id/check', requireWriter, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user?.id;
     const { id } = req.params;
