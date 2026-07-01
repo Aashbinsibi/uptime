@@ -7,7 +7,7 @@
     "build": "rimraf dist && tsc",
     "start": "node dist/index.js",
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
-    "test": "echo \"Error: no test specified\" && exit 0"
+    "test": "jest --forceExit"
   },
   "dependencies": {
     "axios": "^1.4.0",
@@ -30,12 +30,15 @@
     "@types/bcrypt": "^5.0.0",
     "@types/cors": "^2.8.13",
     "@types/express": "^4.17.17",
+    "@types/jest": "^30.0.0",
     "@types/jsonwebtoken": "^9.0.1",
     "@types/node": "^18.15.11",
     "@types/node-cron": "^3.0.7",
     "@types/nodemailer": "^6.4.7",
     "@types/pg": "^8.6.6",
+    "jest": "^30.4.2",
     "rimraf": "^5.0.0",
+    "ts-jest": "^29.4.11",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.0.4"
   }
