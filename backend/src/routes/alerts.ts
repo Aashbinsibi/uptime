@@ -1,6 +1,6 @@
 import { Router, Response } from 'express';
 import { query } from '../db';
-import { requireAuth, AuthenticatedRequest } from '../middleware/auth';
+import { requireAuth, requireWriter, AuthenticatedRequest } from '../middleware/auth';
 import logger from '../services/logger';
 
 const router = Router();
@@ -43,7 +43,7 @@ router.get('/', requireAuth, async (req: AuthenticatedRequest, res: Response) =>
 });
 
 // 2. Acknowledge alert
-router.put('/:id/acknowledge', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+router.put('/:id/acknowledge', requireWriter, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user?.id;
     const { id } = req.params;
@@ -105,7 +105,7 @@ router.put('/:id/acknowledge', requireAuth, async (req: AuthenticatedRequest, re
 });
 
 // 3. Manually Resolve Alert
-router.put('/:id/resolve', requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+router.put('/:id/resolve', requireWriter, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const userId = req.user?.id;
     const { id } = req.params;

@@ -3,27 +3,15 @@ import { query } from '../db';
 
 const router = Router();
 
-// GET /api/public/status - Get names and statuses of monitored nodes (if enabled)
+// GET /api/public/status - Get names and statuses of monitored nodes (if enabled by users)
 router.get('/status', async (req: Request, res: Response) => {
   try {
-    // 1. Verify if public status is enabled
-    const { rows: settingsRows } = await query(
-      "SELECT value FROM global_settings WHERE key = 'public_status_enabled'"
-    );
-    const enabled = settingsRows.length > 0 ? settingsRows[0].value === true : false;
-
-    if (!enabled) {
-      return res.json({
-        success: true,
-        enabled: false,
-        data: []
-      });
-    }
-
-    // 2. Fetch all enabled websites along with their latest online/offline state
+    // Fetch all enabled websites along with their latest online/offline state,
+    // only for users who have opted into public sharing.
     const { rows: websitesRows } = await query(`
       SELECT w.id, w.name, r.is_up
       FROM websites w
+      JOIN users u ON w.user_id = u.id
       LEFT JOIN LATERAL (
         SELECT is_up
         FROM check_results
@@ -31,7 +19,7 @@ router.get('/status', async (req: Request, res: Response) => {
         ORDER BY checked_at DESC
         LIMIT 1
       ) r ON true
-      WHERE w.enabled = true
+      WHERE w.enabled = true AND u.public_sharing_enabled = true
       ORDER BY w.name ASC
     `);
 
