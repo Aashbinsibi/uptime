@@ -4,7 +4,7 @@ import api from '../utils/api';
 import io from 'socket.io-client';
 import { 
   Activity, Plus, Search, RefreshCw, LogOut, Settings as SettingsIcon, 
-  Trash2, Edit3, Power, Globe, Clock, ShieldAlert, CheckCircle2, ChevronRight, X, Bell, Shield 
+  Trash2, Edit3, Power, Globe, Clock, ShieldAlert, CheckCircle2, ChevronRight, X, Bell, Shield, Server
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -264,6 +264,14 @@ const Dashboard: React.FC = () => {
           </button>
           
           <button
+            onClick={() => navigate('/server-monitoring')}
+            className="p-2 bg-slate-900/40 text-slate-400 hover:text-white rounded-lg border border-white/5 hover:border-white/10 transition-all cursor-pointer flex items-center space-x-1.5 text-xs font-semibold"
+          >
+            <Server className="h-4.5 w-4.5 text-sky-400" />
+            <span className="hidden sm:inline">Server Monitor</span>
+          </button>
+          
+          <button
             onClick={() => navigate('/settings')}
             className="p-2 bg-slate-900/40 text-slate-400 hover:text-white rounded-lg border border-white/5 hover:border-white/10 transition-all cursor-pointer flex items-center space-x-1.5 text-xs font-semibold"
           >
@@ -285,11 +293,26 @@ const Dashboard: React.FC = () => {
       <main className="max-w-7xl mx-auto px-4 md:px-8 mt-8 relative z-10">
         
         {/* User Info Greeting */}
-        <div className="mb-8">
-          <h2 className="text-xl font-bold text-white tracking-wide">Availability Dashboard</h2>
-          <p className="text-xs text-slate-400 mt-1">
-            Logged in as <span className="text-slate-200 font-medium">{user?.email}</span>
-          </p>
+        <div className="mb-8 flex flex-col sm:flex-row sm:items-end sm:justify-between border-b border-white/5 pb-4">
+          <div>
+            <h2 className="text-xl font-bold text-white tracking-wide">Availability Dashboard</h2>
+            <p className="text-xs text-slate-400 mt-1">
+              Logged in as <span className="text-slate-200 font-medium">{user?.email}</span>
+            </p>
+          </div>
+          
+          <div className="flex items-center space-x-6 mt-4 sm:mt-0 text-xs font-bold uppercase tracking-wider">
+            <button className="pb-1 text-emerald-400 border-b-2 border-emerald-400 focus:outline-none">
+              Website Monitor
+            </button>
+            <button 
+              onClick={() => navigate('/server-monitoring')}
+              className="pb-1 text-slate-500 hover:text-slate-300 transition-colors focus:outline-none flex items-center space-x-1.5 cursor-pointer"
+            >
+              <Server className="h-3.5 w-3.5" />
+              <span>Server Monitor</span>
+            </button>
+          </div>
         </div>
 
         {/* Aggregated Metrics Cards Grid */}
