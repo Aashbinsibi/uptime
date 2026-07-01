@@ -6,6 +6,7 @@ import Dashboard from './components/Dashboard';
 import WebsiteDetail from './components/WebsiteDetail';
 import Settings from './components/Settings';
 import Alerts from './components/Alerts';
+import ServerMonitoring from './components/ServerMonitoring';
 import { Activity } from 'lucide-react';
 
 const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -63,6 +64,14 @@ function App() {
             element={
               <PrivateRoute>
                 <Alerts />
+              </PrivateRoute>
+            } 
+          />
+          <Route 
+            path="/server-monitoring" 
+            element={
+              <PrivateRoute>
+                <ServerMonitoring />
               </PrivateRoute>
             } 
           />
