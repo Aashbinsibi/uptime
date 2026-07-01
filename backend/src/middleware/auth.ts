@@ -74,3 +74,22 @@ export const requireAdmin = (req: AuthenticatedRequest, res: Response, next: Nex
     next();
   });
 };
+
+export const requireRole = (allowedRoles: string[]) => {
+  return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+    requireAuth(req, res, () => {
+      if (!req.user || !allowedRoles.includes(req.user.role)) {
+        return res.status(403).json({
+          success: false,
+          error: `Forbidden. Requires one of the following roles: ${allowedRoles.join(', ')}`
+        });
+      }
+      next();
+    });
+  };
+};
+
+export const requireWriter = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+  requireRole(['admin', 'user'])(req, res, next);
+};
+

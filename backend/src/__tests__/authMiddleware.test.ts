@@ -1,4 +1,4 @@
-import { requireAuth, requireAdmin, AuthenticatedRequest } from '../middleware/auth';
+import { requireAuth, requireAdmin, requireRole, requireWriter, AuthenticatedRequest } from '../middleware/auth';
 import { Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
@@ -106,4 +106,66 @@ describe('Authentication Middleware', () => {
       expect(nextFunction).not.toHaveBeenCalled();
     });
   });
+
+  describe('requireRole', () => {
+    it('should call next() if user role is in allowedRoles list', () => {
+      const payload = { id: 'user-789', email: 'user@example.com', role: 'user' };
+      const token = jwt.sign(payload, JWT_SECRET);
+      mockRequest.headers = {
+        authorization: `Bearer ${token}`,
+      };
+
+      requireRole(['admin', 'user'])(mockRequest as AuthenticatedRequest, mockResponse as Response, nextFunction);
+
+      expect(nextFunction).toHaveBeenCalled();
+    });
+
+    it('should return 403 status if user role is not in allowedRoles list', () => {
+      const payload = { id: 'viewer-789', email: 'viewer@example.com', role: 'viewer' };
+      const token = jwt.sign(payload, JWT_SECRET);
+      mockRequest.headers = {
+        authorization: `Bearer ${token}`,
+      };
+
+      requireRole(['admin', 'user'])(mockRequest as AuthenticatedRequest, mockResponse as Response, nextFunction);
+
+      expect(mockResponse.status).toHaveBeenCalledWith(403);
+      expect(mockResponse.json).toHaveBeenCalledWith(expect.objectContaining({
+        success: false,
+        error: expect.stringContaining('Forbidden. Requires one of the following roles'),
+      }));
+      expect(nextFunction).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('requireWriter', () => {
+    it('should call next() if user is an admin or user', () => {
+      const payload = { id: 'user-789', email: 'user@example.com', role: 'user' };
+      const token = jwt.sign(payload, JWT_SECRET);
+      mockRequest.headers = {
+        authorization: `Bearer ${token}`,
+      };
+
+      requireWriter(mockRequest as AuthenticatedRequest, mockResponse as Response, nextFunction);
+
+      expect(nextFunction).toHaveBeenCalled();
+    });
+
+    it('should return 403 if user is a viewer', () => {
+      const payload = { id: 'viewer-789', email: 'viewer@example.com', role: 'viewer' };
+      const token = jwt.sign(payload, JWT_SECRET);
+      mockRequest.headers = {
+        authorization: `Bearer ${token}`,
+      };
+
+      requireWriter(mockRequest as AuthenticatedRequest, mockResponse as Response, nextFunction);
+
+      expect(mockResponse.status).toHaveBeenCalledWith(403);
+      expect(mockResponse.json).toHaveBeenCalledWith(expect.objectContaining({
+        success: false,
+      }));
+      expect(nextFunction).not.toHaveBeenCalled();
+    });
+  });
 });
+

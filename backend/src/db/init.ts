@@ -17,6 +17,12 @@ export const initDb = async () => {
       );
     `);
 
+    // Self-healing migration for existing databases: Add public_sharing_enabled column
+    await query(`
+      ALTER TABLE users 
+      ADD COLUMN IF NOT EXISTS public_sharing_enabled BOOLEAN DEFAULT FALSE NOT NULL;
+    `);
+
     // 3. Create Websites Table
     await query(`
       CREATE TABLE IF NOT EXISTS websites (

@@ -3,8 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { 
   ArrowLeft, Bell, Slack, Mail, Save, Server, ShieldCheck, 
-  Clock, ToggleLeft, ToggleRight, CheckCircle2, MessageSquare
+  Clock, ToggleLeft, ToggleRight, CheckCircle2, MessageSquare,
+  Users, UserPlus, Trash2, X
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 interface AlertChannel {
   id?: string;
@@ -25,8 +27,25 @@ interface AuditLog {
   created_at: string;
 }
 
+interface ConsoleUser {
+  id: string;
+  email: string;
+  role: 'admin' | 'user' | 'viewer';
+  created_at: string;
+}
+
 const Settings: React.FC = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  // User Management State
+  const [usersList, setUsersList] = useState<ConsoleUser[]>([]);
+  const [userLoading, setUserLoading] = useState(false);
+  const [showAddUserModal, setShowAddUserModal] = useState(false);
+  const [newEmail, setNewEmail] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [newRole, setNewRole] = useState<'admin' | 'user' | 'viewer'>('user');
+  const [userFormError, setUserFormError] = useState('');
 
   // Settings state
   const [slackEnabled, setSlackEnabled] = useState(false);
@@ -91,9 +110,81 @@ const Settings: React.FC = () => {
     }
   };
 
+  const fetchUsers = async () => {
+    if (user?.role !== 'admin') return;
+    setUserLoading(true);
+    try {
+      const { data } = await api.get('/api/users');
+      if (data.success) {
+        setUsersList(data.data);
+      }
+    } catch (err: any) {
+      console.error('[Settings] Failed to fetch users:', err);
+    } finally {
+      setUserLoading(false);
+    }
+  };
+
+  const handleAddUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setUserFormError('');
+    try {
+      const { data } = await api.post('/api/users', {
+        email: newEmail,
+        password: newPassword,
+        role: newRole
+      });
+      if (data.success) {
+        setUsersList(prev => [data.data, ...prev]);
+        setShowAddUserModal(false);
+        setNewEmail('');
+        setNewPassword('');
+        setNewRole('user');
+      }
+    } catch (err: any) {
+      setUserFormError(err.response?.data?.error || 'Failed to create user');
+    }
+  };
+
+  const handleChangeRole = async (userId: string, targetRole: 'admin' | 'user' | 'viewer') => {
+    try {
+      const { data } = await api.put(`/api/users/${userId}`, {
+        role: targetRole
+      });
+      if (data.success) {
+        setUsersList(prev => prev.map(u => u.id === userId ? { ...u, role: data.data.role } : u));
+        // Refresh settings/logs to reflect audit logging
+        const { data: logsRes } = await api.get('/api/settings/logs');
+        if (logsRes.success) {
+          setLogs(logsRes.data);
+        }
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.error || 'Failed to update user role');
+    }
+  };
+
+  const handleDeleteUser = async (userId: string, email: string) => {
+    if (!window.confirm(`Are you sure you want to delete user "${email}"?`)) return;
+    try {
+      const { data } = await api.delete(`/api/users/${userId}`);
+      if (data.success) {
+        setUsersList(prev => prev.filter(u => u.id !== userId));
+        // Refresh logs
+        const { data: logsRes } = await api.get('/api/settings/logs');
+        if (logsRes.success) {
+          setLogs(logsRes.data);
+        }
+      }
+    } catch (err: any) {
+      alert(err.response?.data?.error || 'Failed to delete user');
+    }
+  };
+
   useEffect(() => {
     fetchSettingsData();
-  }, []);
+    fetchUsers();
+  }, [user]);
 
   // Save Channel Configurations
   const handleSaveChannel = async (type: 'slack' | 'email' | 'teams') => {
@@ -458,6 +549,73 @@ const Settings: React.FC = () => {
               </button>
             </div>
           </div>
+
+          {/* 4. User Management configuration card (Admin only) */}
+          {user?.role === 'admin' && (
+            <div className="glass-panel rounded-2xl p-6 relative overflow-hidden">
+              <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center space-x-3">
+                  <div className="p-3 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
+                    <Users className="h-5.5 w-5.5 text-emerald-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-white uppercase tracking-wider">Console User Accounts</h3>
+                    <p className="text-[10px] text-slate-500 mt-0.5">Manage console administrator, writer, and read-only viewer accounts.</p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setShowAddUserModal(true)}
+                  className="flex items-center space-x-1.5 py-1.5 px-3 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold rounded-xl text-[10px] cursor-pointer transition-colors"
+                >
+                  <UserPlus className="h-3.5 w-3.5" />
+                  <span>Add Account</span>
+                </button>
+              </div>
+
+              {/* User list */}
+              <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
+                {userLoading ? (
+                  <p className="text-xs text-slate-500 italic">Syncing user nodes...</p>
+                ) : usersList.length === 0 ? (
+                  <p className="text-xs text-slate-500 italic">No user accounts found.</p>
+                ) : (
+                  usersList.map((usr) => (
+                    <div key={usr.id} className="flex justify-between items-center p-3 rounded-xl bg-slate-950/25 border border-white/5 text-xs">
+                      <div className="truncate max-w-[55%]">
+                        <p className="text-slate-200 font-medium truncate" title={usr.email}>{usr.email}</p>
+                        <p className="text-[9px] text-slate-500 mt-0.5">Registered: {new Date(usr.created_at).toLocaleDateString()}</p>
+                      </div>
+
+                      <div className="flex items-center space-x-3">
+                        {/* Role selection dropdown */}
+                        <select
+                          value={usr.role}
+                          onChange={(e) => handleChangeRole(usr.id, e.target.value as any)}
+                          disabled={usr.id === user.id}
+                          className="bg-[#080c14] border border-white/10 rounded-lg py-1 px-2 text-[10px] text-slate-300 focus:outline-none focus:border-emerald-500"
+                        >
+                          <option value="admin">Admin</option>
+                          <option value="user">User</option>
+                          <option value="viewer">Viewer</option>
+                        </select>
+
+                        {/* Delete account */}
+                        <button
+                          onClick={() => handleDeleteUser(usr.id, usr.email)}
+                          disabled={usr.id === user.id}
+                          className="p-1.5 bg-slate-900/30 hover:bg-rose-900/40 text-slate-500 hover:text-rose-400 rounded-lg border border-white/5 cursor-pointer disabled:opacity-20 disabled:pointer-events-none transition-colors"
+                          title="Remove user account"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
         </section>
 
         {/* Right Side: Security Audit Logs (1 col) */}
@@ -532,6 +690,95 @@ const Settings: React.FC = () => {
           </div>
         </section>
       </main>
+
+      {showAddUserModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md">
+          <div className="w-full max-w-md rounded-2xl glass-panel p-6 md:p-8 animate-in fade-in zoom-in-95 duration-150 border border-white/10 shadow-2xl relative">
+            
+            {/* Modal Header */}
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-base font-bold text-white">
+                Register Console Account
+              </h3>
+              <button 
+                onClick={() => {
+                  setShowAddUserModal(false);
+                  setUserFormError('');
+                }}
+                className="p-1 text-slate-500 hover:text-white hover:bg-white/5 rounded-md cursor-pointer transition-colors"
+              >
+                <X className="h-4.5 w-4.5" />
+              </button>
+            </div>
+
+            {userFormError && (
+              <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-xs text-red-400 font-medium">
+                {userFormError}
+              </div>
+            )}
+
+            {/* Form */}
+            <form onSubmit={handleAddUser} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs text-slate-400 font-medium block">Account Email</label>
+                <input
+                  type="email"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  placeholder="user@example.com"
+                  className="w-full bg-[#080c14] border border-white/10 rounded-xl py-2 px-3.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
+                  required
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs text-slate-400 font-medium block">Temporary Password</label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full bg-[#080c14] border border-white/10 rounded-xl py-2 px-3.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
+                  required
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs text-slate-400 font-medium block">Access Privilege Level</label>
+                <select
+                  value={newRole}
+                  onChange={(e) => setNewRole(e.target.value as any)}
+                  className="w-full bg-[#080c14] border border-white/10 rounded-xl py-2 px-3 text-xs text-white focus:outline-none focus:border-emerald-500 transition-colors"
+                >
+                  <option value="viewer">Viewer (Read-only)</option>
+                  <option value="user">User (Manage checkpoints)</option>
+                  <option value="admin">Administrator (Full Access)</option>
+                </select>
+              </div>
+
+              {/* Submit panel */}
+              <div className="flex space-x-3 pt-4 justify-end">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAddUserModal(false);
+                    setUserFormError('');
+                  }}
+                  className="py-2 px-4 bg-slate-900/60 hover:bg-slate-900 text-slate-400 hover:text-white rounded-xl text-xs font-semibold cursor-pointer border border-white/5 hover:border-white/10 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="py-2 px-4 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-slate-950 font-bold rounded-xl text-xs cursor-pointer transition-colors"
+                >
+                  Create User
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
