@@ -6,6 +6,10 @@ export default {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', 'sans-serif'],
+        mono: ['"IBM Plex Mono"', 'ui-monospace', 'monospace'],
+      },
       colors: {
         // Harmonious sleek design colors
         dark: {
@@ -15,7 +19,7 @@ export default {
           600: '#374151',
         }
       }
-    },
+    }
   },
   plugins: [],
 }
