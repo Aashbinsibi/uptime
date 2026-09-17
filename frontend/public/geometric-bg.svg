@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="104" viewBox="0 0 120 104">
+  <defs>
+    <style>
+      .bg-fill { fill: #f8fafc; }
+      .facet-top { fill: #ffffff; }
+      .facet-right { fill: #f1f5f9; }
+      .facet-left { fill: #eef2f6; }
+      .grid-line { stroke: #e2e8f0; stroke-width: 0.75; stroke-linecap: round; stroke-linejoin: round; }
+      .node-dot { fill: #cbd5e1; }
+    </style>
+  </defs>
+
+  <!-- Background Canvas -->
+  <rect width="120" height="104" class="bg-fill" />
+
+  <!-- Top-left Isometric Cube (Center at 30, 26) -->
+  <polygon points="30,0 60,17.32 30,34.64 0,17.32" class="facet-top" />
+  <polygon points="30,34.64 60,17.32 60,51.96 30,69.28" class="facet-right" />
+  <polygon points="30,34.64 30,69.28 0,51.96 0,17.32" class="facet-left" />
+
+  <!-- Top-right Isometric Cube (Center at 90, 26) -->
+  <polygon points="90,0 120,17.32 90,34.64 60,17.32" class="facet-top" />
+  <polygon points="90,34.64 120,17.32 120,51.96 90,69.28" class="facet-right" />
+  <polygon points="90,34.64 90,69.28 60,51.96 60,17.32" class="facet-left" />
+
+  <!-- Bottom-center Isometric Cube (Center at 60, 78) -->
+  <polygon points="60,51.96 90,69.28 60,86.6 30,69.28" class="facet-top" />
+  <polygon points="60,86.6 90,69.28 90,103.92 60,121.24" class="facet-right" />
+  <polygon points="60,86.6 60,121.24 30,103.92 30,69.28" class="facet-left" />
+
+  <!-- Edge Tiling / Wrapping Polygons -->
+  <!-- Bottom-left (wrapping from x=120) -->
+  <polygon points="0,51.96 30,69.28 0,86.6 -30,69.28" class="facet-top" />
+  <polygon points="0,86.6 30,69.28 30,103.92 0,121.24" class="facet-right" />
+  
+  <!-- Bottom-right (wrapping from x=0) -->
+  <polygon points="120,51.96 150,69.28 120,86.6 90,69.28" class="facet-top" />
+  <polygon points="120,86.6 120,121.24 90,103.92 90,69.28" class="facet-left" />
+
+  <!-- Top edge wrap (from y=104: bottom cube top facet wraps up) -->
+  <polygon points="60,-17.4 90,0 60,17.32 30,0" class="facet-right" />
+  <polygon points="0,-17.4 30,0 0,17.32 -30,0" class="facet-right" />
+  <polygon points="120,-17.4 150,0 120,17.32 90,0" class="facet-left" />
+
+  <!-- Isometric Outlines -->
+  <!-- Hex 1 -->
+  <line x1="30" y1="0" x2="60" y2="17.32" class="grid-line" />
+  <line x1="60" y1="17.32" x2="60" y2="51.96" class="grid-line" />
+  <line x1="60" y1="51.96" x2="30" y2="69.28" class="grid-line" />
+  <line x1="30" y1="69.28" x2="0" y2="51.96" class="grid-line" />
+  <line x1="0" y1="51.96" x2="0" y2="17.32" class="grid-line" />
+  <line x1="0" y1="17.32" x2="30" y2="0" class="grid-line" />
+  <line x1="30" y1="0" x2="30" y2="34.64" class="grid-line" />
+  <line x1="30" y1="34.64" x2="60" y2="17.32" class="grid-line" />
+  <line x1="30" y1="34.64" x2="0" y2="17.32" class="grid-line" />
+  <line x1="30" y1="34.64" x2="30" y2="69.28" class="grid-line" />
+
+  <!-- Hex 2 -->
+  <line x1="90" y1="0" x2="120" y2="17.32" class="grid-line" />
+  <line x1="120" y1="17.32" x2="120" y2="51.96" class="grid-line" />
+  <line x1="120" y1="51.96" x2="90" y2="69.28" class="grid-line" />
+  <line x1="90" y1="0" x2="90" y2="34.64" class="grid-line" />
+  <line x1="90" y1="34.64" x2="120" y2="17.32" class="grid-line" />
+  <line x1="90" y1="34.64" x2="60" y2="17.32" class="grid-line" />
+  <line x1="90" y1="34.64" x2="90" y2="69.28" class="grid-line" />
+
+  <!-- Hex 3 -->
+  <line x1="60" y1="51.96" x2="90" y2="69.28" class="grid-line" />
+  <line x1="90" y1="69.28" x2="90" y2="103.92" class="grid-line" />
+  <line x1="90" y1="103.92" x2="60" y2="104" class="grid-line" />
+  <line x1="60" y1="104" x2="30" y2="103.92" class="grid-line" />
+  <line x1="30" y1="103.92" x2="30" y2="69.28" class="grid-line" />
+  <line x1="60" y1="51.96" x2="60" y2="86.6" class="grid-line" />
+  <line x1="60" y1="86.6" x2="90" y2="69.28" class="grid-line" />
+  <line x1="60" y1="86.6" x2="30" y2="69.28" class="grid-line" />
+  <line x1="60" y1="86.6" x2="60" y2="104" class="grid-line" />
+
+  <!-- Left/Right borders -->
+  <line x1="0" y1="51.96" x2="30" y2="69.28" class="grid-line" />
+  <line x1="30" y1="69.28" x2="30" y2="103.92" class="grid-line" />
+  <line x1="0" y1="86.6" x2="30" y2="69.28" class="grid-line" />
+  <line x1="0" y1="86.6" x2="0" y2="104" class="grid-line" />
+
+  <line x1="120" y1="51.96" x2="90" y2="69.28" class="grid-line" />
+  <line x1="90" y1="69.28" x2="90" y2="103.92" class="grid-line" />
+  <line x1="120" y1="86.6" x2="90" y2="69.28" class="grid-line" />
+  <line x1="120" y1="86.6" x2="120" y2="104" class="grid-line" />
+
+  <!-- Geometric Vertex Dots -->
+  <circle cx="30" cy="34.64" r="1.5" class="node-dot" />
+  <circle cx="90" cy="34.64" r="1.5" class="node-dot" />
+  <circle cx="60" cy="86.6" r="1.5" class="node-dot" />
+  <circle cx="60" cy="17.32" r="1.5" class="node-dot" />
+  <circle cx="30" cy="69.28" r="1.5" class="node-dot" />
+  <circle cx="90" cy="69.28" r="1.5" class="node-dot" />
+  <circle cx="0" cy="17.32" r="1.5" class="node-dot" />
+  <circle cx="120" cy="17.32" r="1.5" class="node-dot" />
+  <circle cx="0" cy="86.6" r="1.5" class="node-dot" />
+  <circle cx="120" cy="86.6" r="1.5" class="node-dot" />
+</svg>

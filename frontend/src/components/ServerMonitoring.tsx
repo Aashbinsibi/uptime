@@ -6,83 +6,97 @@ const ServerMonitoring: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-[#080c14] text-slate-100 flex flex-col relative overflow-hidden font-sans">
+    <div className="min-h-screen bg-[#09090b] text-zinc-100 flex flex-col relative overflow-hidden font-sans">
       
-      {/* Background gradients */}
-      <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-emerald-500/5 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-blue-500/5 blur-[120px] pointer-events-none" />
-
-      {/* Decorative top bar */}
-      <div className="h-1.5 bg-gradient-to-r from-emerald-500 via-blue-500 to-indigo-500 w-full" />
+      {/* Top subtle border */}
+      <div className="h-0.5 bg-zinc-800 w-full" />
 
       {/* Top Header */}
-      <header className="max-w-7xl mx-auto w-full px-4 md:px-8 py-6 flex items-center justify-between border-b border-white/5 relative z-10">
+      <header className="max-w-7xl mx-auto w-full px-4 md:px-8 py-6 flex items-center justify-between border-b border-zinc-800 relative z-10 font-mono">
         <button
           onClick={() => navigate('/')}
-          className="flex items-center space-x-2 py-1.5 px-3 bg-slate-900/40 hover:bg-slate-900/80 text-slate-400 hover:text-white rounded-xl border border-white/5 hover:border-white/10 transition-all text-xs font-semibold cursor-pointer"
+          className="flex items-center space-x-2 py-1.5 px-3 bg-zinc-900 hover:bg-black text-zinc-200 hover:text-white rounded-xl border border-zinc-700 transition-all text-xs font-semibold cursor-pointer shadow-sm"
         >
           <ArrowLeft className="h-4 w-4" />
           <span>Back to Dashboard</span>
         </button>
 
         <div className="flex items-center space-x-2">
-          <Server className="h-5 w-5 text-emerald-400" />
-          <span className="font-bold tracking-tight text-white text-sm uppercase">Antigravity Monitor</span>
+          <Server className="h-5 w-5 text-white" />
+          <span className="font-bold tracking-tight text-white text-sm uppercase">Antigravity Server Agent</span>
         </div>
       </header>
 
       {/* Center Hero Panel */}
-      <main className="flex-grow max-w-4xl mx-auto w-full px-4 flex flex-col items-center justify-center py-16 relative z-10 text-center">
+      <main className="flex-grow max-w-4xl mx-auto w-full px-4 flex flex-col items-center justify-center py-16 relative z-10 text-center font-mono">
         
         {/* Animated main visual icon */}
         <div className="relative mb-8 group">
-          <div className="absolute inset-0 bg-emerald-500/20 rounded-3xl blur-xl group-hover:bg-emerald-500/30 transition-all duration-300" />
-          <div className="relative p-6 bg-slate-950/60 rounded-3xl border border-emerald-500/20 backdrop-blur-md shadow-2xl flex items-center justify-center">
-            <Server className="h-16 w-16 text-emerald-400 animate-pulse" />
+          <div className="relative p-6 bg-black rounded-3xl border border-zinc-700 backdrop-blur-md shadow-2xl flex items-center justify-center">
+            <Server className="h-16 w-16 text-white animate-pulse" />
           </div>
-          <span className="absolute -bottom-2 -right-2 px-2.5 py-1 bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-[9px] font-extrabold uppercase rounded-full tracking-widest border border-white/10 shadow-lg">
-            Agent Mode
+          <span className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 px-3 py-0.5 bg-zinc-900 text-zinc-300 text-[9px] font-mono font-bold uppercase rounded-full tracking-widest border border-zinc-700 shadow-md">
+            Available Soon
           </span>
         </div>
 
         {/* Text descriptions */}
-        <h1 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight leading-tight max-w-lg">
-          Server & Infrastructure Monitoring
+        <h1 className="text-3xl md:text-4xl font-extrabold text-white tracking-tight leading-tight max-w-xl">
+          Antigravity Server Agent
         </h1>
         
-        <p className="text-slate-400 text-sm mt-4 max-w-md leading-relaxed">
-          Comprehensive OS-level diagnostics, disk usage tracking, memory exhaustion checks, and CPU spikes alarms are coming soon.
+        <p className="text-zinc-400 text-xs md:text-sm mt-4 max-w-lg leading-relaxed font-normal">
+          The Antigravity Server Agent will be available soon. Comprehensive OS-level diagnostics, disk usage tracking, memory exhaustion checks, and CPU load alarms.
         </p>
 
         {/* Coming soon badge */}
-        <div className="mt-6 inline-flex items-center space-x-2 py-1 px-3 bg-emerald-500/10 border border-emerald-500/20 rounded-full text-[10px] font-bold text-emerald-400 uppercase tracking-widest">
-          <Zap className="h-3 w-3 animate-bounce" />
-          <span>Feature Coming Soon</span>
+        <div className="mt-6 inline-flex items-center space-x-2 py-1 px-3.5 bg-zinc-900 border border-zinc-700 rounded-full text-[10px] font-bold text-white uppercase tracking-widest font-mono shadow-sm">
+          <Zap className="h-3 w-3 text-white animate-bounce" />
+          <span>Agent Available Soon</span>
+        </div>
+
+        {/* Install Preview Snippet */}
+        <div className="mt-8 max-w-lg w-full bg-black border border-zinc-800 rounded-2xl p-4 text-left font-mono shadow-inner">
+          <div className="flex items-center justify-between text-[10px] text-zinc-500 border-b border-zinc-800 pb-2 mb-3">
+            <span className="flex items-center space-x-1.5">
+              <Terminal className="h-3.5 w-3.5 text-zinc-400" />
+              <span>Upcoming Agent One-Line Install</span>
+            </span>
+            <span className="text-[9px] uppercase tracking-wider text-zinc-500">Preview</span>
+          </div>
+          <div className="text-xs text-zinc-300 flex items-center justify-between">
+            <code className="text-zinc-300 select-all">
+              curl -sSL https://agent.antigravity.io/install.sh | sudo bash
+            </code>
+            <span className="ml-2 text-[10px] text-zinc-500 font-bold uppercase tracking-wider whitespace-nowrap">
+              Soon
+            </span>
+          </div>
         </div>
 
         {/* Feature Teasers Columns */}
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16 w-full">
-          <div className="glass-panel p-6 rounded-2xl border border-white/5 hover:border-white/10 transition-all text-left">
-            <Cpu className="h-6 w-6 text-emerald-400 mb-3" />
+        <section className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 w-full text-left">
+          <div className="bg-zinc-900/90 p-6 rounded-2xl border border-zinc-800 hover:border-zinc-700 transition-all shadow-md">
+            <Cpu className="h-6 w-6 text-white mb-3" />
             <h4 className="text-xs font-bold text-white uppercase tracking-wider">CPU & Load Tracking</h4>
-            <p className="text-[10px] text-slate-500 leading-relaxed mt-2">
+            <p className="text-[10px] text-zinc-400 leading-relaxed mt-2">
               Visualizes multicore processor usage, load averages, and highlights processes causing spikes.
             </p>
           </div>
 
-          <div className="glass-panel p-6 rounded-2xl border border-white/5 hover:border-white/10 transition-all text-left">
-            <HardDrive className="h-6 w-6 text-blue-400 mb-3" />
+          <div className="bg-zinc-900/90 p-6 rounded-2xl border border-zinc-800 hover:border-zinc-700 transition-all shadow-md">
+            <HardDrive className="h-6 w-6 text-white mb-3" />
             <h4 className="text-xs font-bold text-white uppercase tracking-wider">Storage Diagnostics</h4>
-            <p className="text-[10px] text-slate-500 leading-relaxed mt-2">
+            <p className="text-[10px] text-zinc-400 leading-relaxed mt-2">
               Inspects filesystem storage allocations, I/O bandwidth bottlenecks, and sends warnings when storage fills.
             </p>
           </div>
 
-          <div className="glass-panel p-6 rounded-2xl border border-white/5 hover:border-white/10 transition-all text-left">
-            <Terminal className="h-6 w-6 text-indigo-400 mb-3" />
-            <h4 className="text-xs font-bold text-white uppercase tracking-wider">Linux Agent Node</h4>
-            <p className="text-[10px] text-slate-500 leading-relaxed mt-2">
-              A light-weight daemon package reporting daemon diagnostics back to your private central dashboard securely.
+          <div className="bg-zinc-900/90 p-6 rounded-2xl border border-zinc-800 hover:border-zinc-700 transition-all shadow-md">
+            <Terminal className="h-6 w-6 text-white mb-3" />
+            <h4 className="text-xs font-bold text-white uppercase tracking-wider">Host Telemetry Daemon</h4>
+            <p className="text-[10px] text-zinc-400 leading-relaxed mt-2">
+              A light-weight single binary daemon reporting host diagnostics back to your private central dashboard securely.
             </p>
           </div>
         </section>
@@ -91,7 +105,7 @@ const ServerMonitoring: React.FC = () => {
         <div className="mt-12">
           <button
             onClick={() => navigate('/')}
-            className="py-2.5 px-6 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-slate-950 font-bold rounded-xl text-xs cursor-pointer shadow-lg shadow-emerald-500/10 hover:shadow-emerald-500/20 transition-all"
+            className="py-2.5 px-6 bg-white hover:bg-zinc-200 active:bg-zinc-300 text-black font-bold rounded-xl text-xs cursor-pointer shadow-md border border-zinc-300 transition-all font-mono"
           >
             Return to Dashboard
           </button>
@@ -99,7 +113,7 @@ const ServerMonitoring: React.FC = () => {
       </main>
 
       {/* Footer copyright */}
-      <footer className="py-6 text-center text-[10px] text-slate-600 border-t border-white/5 relative z-10">
+      <footer className="py-6 text-center text-[10px] text-zinc-500 border-t border-zinc-800 relative z-10 font-mono">
         &copy; {new Date().getFullYear()} Antigravity Uptime. All rights reserved.
       </footer>
     </div>

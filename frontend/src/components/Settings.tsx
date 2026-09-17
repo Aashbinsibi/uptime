@@ -270,10 +270,10 @@ const Settings: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#080c14]">
-        <div className="flex flex-col items-center">
-          <Bell className="h-10 w-10 text-emerald-500 animate-bounce" />
-          <p className="mt-4 text-slate-400 font-medium">Synching notification nodes...</p>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center glass-panel p-8 rounded-3xl shadow-2xl border border-zinc-800">
+          <Bell className="h-10 w-10 text-white animate-spin" />
+          <p className="mt-4 text-zinc-400 font-medium text-xs font-mono">Synching notification nodes...</p>
         </div>
       </div>
     );
@@ -281,24 +281,21 @@ const Settings: React.FC = () => {
 
   return (
     <div className="min-h-screen pb-16 relative">
-      {/* Ambients glows */}
-      <div className="absolute top-[20%] right-[10%] w-[350px] h-[350px] rounded-full bg-emerald-500/5 blur-[120px] pointer-events-none" />
-
       {/* Navigation Header */}
-      <header className="border-b border-white/5 py-4 px-6 md:px-12 flex justify-between items-center relative z-20 glass-panel">
+      <header className="border-b border-zinc-800 py-4 px-6 md:px-12 flex justify-between items-center relative z-20 glass-panel">
         <button
           onClick={() => navigate('/')}
-          className="flex items-center space-x-2 py-1.5 px-3.5 bg-slate-900/40 hover:bg-slate-900 text-slate-300 hover:text-white font-semibold rounded-lg text-xs border border-white/5 hover:border-white/10 cursor-pointer transition-all"
+          className="flex items-center space-x-2 py-1.5 px-3.5 bg-zinc-900 hover:bg-black text-zinc-300 hover:text-white font-semibold rounded-lg text-xs border border-zinc-700 cursor-pointer transition-all"
         >
           <ArrowLeft className="h-4 w-4" />
           <span>Dashboard</span>
         </button>
 
         <div className="flex items-center space-x-3">
-          <div className="p-2 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
-            <Bell className="h-4.5 w-4.5 text-emerald-400" />
+          <div className="p-2 bg-zinc-900 rounded-lg border border-zinc-700">
+            <Bell className="h-4.5 w-4.5 text-white" />
           </div>
-          <span className="font-bold tracking-tight text-white text-sm hidden sm:inline">
+          <span className="font-bold tracking-tight text-white text-sm hidden sm:inline font-mono">
             CORE DISPATCHER
           </span>
         </div>
@@ -311,45 +308,45 @@ const Settings: React.FC = () => {
         <section className="lg:col-span-2 space-y-6">
           
           <div className="mb-4">
-            <h2 className="text-xl font-bold text-white tracking-wide">Alert Notification Settings</h2>
-            <p className="text-xs text-slate-400 mt-1">Configure communication channels to dispatch immediate UP/DOWN alert signals.</p>
+            <h2 className="text-xl font-bold text-black tracking-wide font-mono">Alert Notification Settings</h2>
+            <p className="text-xs text-zinc-600 mt-1">Configure communication channels to dispatch immediate UP/DOWN alert signals.</p>
           </div>
 
           {saveSuccessMsg && (
-            <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-400 font-semibold flex items-center space-x-2">
-              <CheckCircle2 className="h-4.5 w-4.5 text-emerald-500" />
+            <div className="p-3 rounded-lg bg-zinc-900 border border-zinc-700 text-xs text-zinc-100 font-semibold font-mono flex items-center space-x-2">
+              <CheckCircle2 className="h-4.5 w-4.5 text-white" />
               <span>{saveSuccessMsg}</span>
             </div>
           )}
 
           {saveErrorMsg && (
-            <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-xs text-red-400 font-medium">
+            <div className="p-3 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white font-mono">
               {saveErrorMsg}
             </div>
           )}
 
           {/* 1. Slack Webhook configuration card */}
-          <div className="glass-panel rounded-2xl p-6 relative overflow-hidden">
+          <div className="glass-panel rounded-2xl p-6 relative overflow-hidden border border-zinc-800">
             <div className="flex justify-between items-start mb-6">
               <div className="flex items-center space-x-3">
-                <div className="p-3 bg-[#e01e5a]/10 rounded-xl border border-[#e01e5a]/20">
-                  <Slack className="h-5.5 w-5.5 text-[#e01e5a]" />
+                <div className="p-3 bg-zinc-900 rounded-xl border border-zinc-700">
+                  <Slack className="h-5.5 w-5.5 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-white">Slack Webhook alerts</h3>
-                  <p className="text-[10px] text-slate-500 mt-0.5">Sends formatted message cards directly into a Slack workspace channel.</p>
+                  <h3 className="text-sm font-bold text-white font-mono">Slack Webhook alerts</h3>
+                  <p className="text-[10px] text-zinc-400 mt-0.5">Sends formatted message cards directly into a Slack workspace channel.</p>
                 </div>
               </div>
 
               {/* Toggle switch */}
               <button
                 onClick={() => setSlackEnabled(prev => !prev)}
-                className="text-slate-400 hover:text-white cursor-pointer transition-colors"
+                className="text-zinc-400 hover:text-white cursor-pointer transition-colors"
               >
                 {slackEnabled ? (
-                  <ToggleRight className="h-7 w-7 text-emerald-500" />
+                  <ToggleRight className="h-7 w-7 text-white" />
                 ) : (
-                  <ToggleLeft className="h-7 w-7 text-slate-600" />
+                  <ToggleLeft className="h-7 w-7 text-zinc-600" />
                 )}
               </button>
             </div>
@@ -357,13 +354,13 @@ const Settings: React.FC = () => {
             {/* Config inputs (shows only when toggled) */}
             <div className="space-y-4 pt-2">
               <div className="space-y-1.5">
-                <label className="text-xs text-slate-400 font-medium block">Incoming Webhook URL</label>
+                <label className="text-xs text-zinc-400 font-medium block font-mono">Incoming Webhook URL</label>
                 <input
                   type="url"
                   value={slackUrl}
                   onChange={(e) => setSlackUrl(e.target.value)}
                   placeholder="https://hooks.slack.com/services/YOUR_WORKSPACE_ID/CHANNEL_ID/SECRET_TOKEN"
-                  className="w-full bg-[#080c14] border border-white/5 rounded-xl py-2 px-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-xl py-2 px-3 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-white transition-colors font-mono"
                   disabled={!slackEnabled || saving}
                 />
               </div>
@@ -373,14 +370,14 @@ const Settings: React.FC = () => {
                   type="button"
                   onClick={() => handleTestChannel('slack')}
                   disabled={saving || !slackUrl}
-                  className="flex items-center space-x-1.5 py-1.5 px-4 bg-slate-800 hover:bg-slate-700 active:bg-slate-600 text-slate-300 font-semibold rounded-xl text-xs cursor-pointer disabled:opacity-40 transition-colors"
+                  className="flex items-center space-x-1.5 py-1.5 px-4 bg-zinc-900 hover:bg-zinc-800 active:bg-black text-zinc-300 font-semibold rounded-xl text-xs cursor-pointer border border-zinc-700 disabled:opacity-40 transition-colors"
                 >
                   <span>Test Channel</span>
                 </button>
                 <button
                   onClick={() => handleSaveChannel('slack')}
                   disabled={saving || (slackEnabled && !slackUrl)}
-                  className="flex items-center space-x-1.5 py-1.5 px-4 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-slate-950 font-bold rounded-xl text-xs cursor-pointer disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                  className="flex items-center space-x-1.5 py-1.5 px-4 bg-white hover:bg-zinc-200 active:bg-zinc-300 text-black font-bold rounded-xl text-xs cursor-pointer disabled:opacity-40 disabled:pointer-events-none transition-colors shadow-sm"
                 >
                   <Save className="h-3.5 w-3.5" />
                   <span>Save Slack Config</span>
@@ -390,27 +387,27 @@ const Settings: React.FC = () => {
           </div>
 
           {/* Teams Webhook configuration card */}
-          <div className="glass-panel rounded-2xl p-6 relative overflow-hidden">
+          <div className="glass-panel rounded-2xl p-6 relative overflow-hidden border border-zinc-800">
             <div className="flex justify-between items-start mb-6">
               <div className="flex items-center space-x-3">
-                <div className="p-3 bg-[#4b53bc]/10 rounded-xl border border-[#4b53bc]/20">
-                  <MessageSquare className="h-5.5 w-5.5 text-[#4b53bc]" />
+                <div className="p-3 bg-zinc-900 rounded-xl border border-zinc-700">
+                  <MessageSquare className="h-5.5 w-5.5 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-white">Microsoft Teams Webhook alerts</h3>
-                  <p className="text-[10px] text-slate-500 mt-0.5">Sends formatted Message Cards directly into a Microsoft Teams channel.</p>
+                  <h3 className="text-sm font-bold text-white font-mono">Microsoft Teams Webhook alerts</h3>
+                  <p className="text-[10px] text-zinc-400 mt-0.5">Sends formatted Message Cards directly into a Microsoft Teams channel.</p>
                 </div>
               </div>
 
               {/* Toggle switch */}
               <button
                 onClick={() => setTeamsEnabled(prev => !prev)}
-                className="text-slate-400 hover:text-white cursor-pointer transition-colors"
+                className="text-zinc-400 hover:text-white cursor-pointer transition-colors"
               >
                 {teamsEnabled ? (
-                  <ToggleRight className="h-7 w-7 text-emerald-500" />
+                  <ToggleRight className="h-7 w-7 text-white" />
                 ) : (
-                  <ToggleLeft className="h-7 w-7 text-slate-600" />
+                  <ToggleLeft className="h-7 w-7 text-zinc-600" />
                 )}
               </button>
             </div>
@@ -418,13 +415,13 @@ const Settings: React.FC = () => {
             {/* Config inputs (shows only when toggled) */}
             <div className="space-y-4 pt-2">
               <div className="space-y-1.5">
-                <label className="text-xs text-slate-400 font-medium block">Incoming Webhook URL</label>
+                <label className="text-xs text-zinc-400 font-medium block font-mono">Incoming Webhook URL</label>
                 <input
                   type="url"
                   value={teamsUrl}
                   onChange={(e) => setTeamsUrl(e.target.value)}
                   placeholder="https://YOUR_ORGANIZATION.webhook.office.com/webhookb2/YOUR_WEBHOOK_DETAILS"
-                  className="w-full bg-[#080c14] border border-white/5 rounded-xl py-2 px-3 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
+                  className="w-full bg-zinc-950 border border-zinc-800 rounded-xl py-2 px-3 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-white transition-colors font-mono"
                   disabled={!teamsEnabled || saving}
                 />
               </div>
@@ -434,14 +431,14 @@ const Settings: React.FC = () => {
                   type="button"
                   onClick={() => handleTestChannel('teams')}
                   disabled={saving || !teamsUrl}
-                  className="flex items-center space-x-1.5 py-1.5 px-4 bg-slate-800 hover:bg-slate-700 active:bg-slate-600 text-slate-300 font-semibold rounded-xl text-xs cursor-pointer disabled:opacity-40 transition-colors"
+                  className="flex items-center space-x-1.5 py-1.5 px-4 bg-zinc-900 hover:bg-zinc-800 active:bg-black text-zinc-300 font-semibold rounded-xl text-xs cursor-pointer border border-zinc-700 disabled:opacity-40 transition-colors"
                 >
                   <span>Test Channel</span>
                 </button>
                 <button
                   onClick={() => handleSaveChannel('teams')}
                   disabled={saving || (teamsEnabled && !teamsUrl)}
-                  className="flex items-center space-x-1.5 py-1.5 px-4 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-slate-950 font-bold rounded-xl text-xs cursor-pointer disabled:opacity-40 disabled:pointer-events-none transition-colors"
+                  className="flex items-center space-x-1.5 py-1.5 px-4 bg-white hover:bg-zinc-200 active:bg-zinc-300 text-black font-bold rounded-xl text-xs cursor-pointer disabled:opacity-40 disabled:pointer-events-none transition-colors shadow-sm"
                 >
                   <Save className="h-3.5 w-3.5" />
                   <span>Save Teams Config</span>
@@ -450,52 +447,50 @@ const Settings: React.FC = () => {
             </div>
           </div>
 
-
-
           {/* 2. Email alert channels configuration card */}
-          <div className="glass-panel rounded-2xl p-6 relative overflow-hidden">
+          <div className="glass-panel rounded-2xl p-6 relative overflow-hidden border border-zinc-800">
             <div className="flex justify-between items-start">
               <div className="flex items-center space-x-3">
-                <div className="p-3 bg-blue-500/10 rounded-xl border border-blue-500/20">
-                  <Mail className="h-5.5 w-5.5 text-blue-400" />
+                <div className="p-3 bg-zinc-900 rounded-xl border border-zinc-700">
+                  <Mail className="h-5.5 w-5.5 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-white">SMTP Email reports</h3>
-                  <p className="text-[10px] text-slate-500 mt-0.5">Sends diagnostic HTML alert tables directly to the configured SMTP account.</p>
+                  <h3 className="text-sm font-bold text-white font-mono">SMTP Email reports</h3>
+                  <p className="text-[10px] text-zinc-400 mt-0.5">Sends diagnostic HTML alert tables directly to the configured SMTP account.</p>
                 </div>
               </div>
 
               {/* Toggle switch */}
               <button
                 onClick={() => setEmailEnabled(prev => !prev)}
-                className="text-slate-400 hover:text-white cursor-pointer transition-colors"
+                className="text-zinc-400 hover:text-white cursor-pointer transition-colors"
               >
                 {emailEnabled ? (
-                  <ToggleRight className="h-7 w-7 text-emerald-500" />
+                  <ToggleRight className="h-7 w-7 text-white" />
                 ) : (
-                  <ToggleLeft className="h-7 w-7 text-slate-600" />
+                  <ToggleLeft className="h-7 w-7 text-zinc-600" />
                 )}
               </button>
             </div>
 
             {/* Email note explanation */}
-            <div className="mt-4 p-3 bg-slate-950/40 border border-white/5 rounded-xl text-[10px] text-slate-500 leading-relaxed">
-              Emails will be dispatched to your environment account address: <span className="text-slate-300 font-semibold">{import.meta.env.VITE_SMTP_USER || 'configured in backend .env'}</span>. Change the SMTP login values inside the backend configurations to adjust this routing.
+            <div className="mt-4 p-3 bg-zinc-950/60 border border-zinc-800 rounded-xl text-[10px] text-zinc-400 leading-relaxed font-mono">
+              Emails will be dispatched to your environment account address: <span className="text-zinc-200 font-semibold">{import.meta.env.VITE_SMTP_USER || 'configured in backend .env'}</span>. Change the SMTP login values inside the backend configurations to adjust this routing.
             </div>
 
-            <div className="flex justify-end pt-4 mt-2 border-t border-white/5 space-x-3">
+            <div className="flex justify-end pt-4 mt-2 border-t border-zinc-800 space-x-3">
               <button
                 type="button"
                 onClick={() => handleTestChannel('email')}
                 disabled={saving}
-                className="flex items-center space-x-1.5 py-1.5 px-4 bg-slate-800 hover:bg-slate-700 active:bg-slate-600 text-slate-300 font-semibold rounded-xl text-xs cursor-pointer disabled:opacity-40 transition-colors"
+                className="flex items-center space-x-1.5 py-1.5 px-4 bg-zinc-900 hover:bg-zinc-800 active:bg-black text-zinc-300 font-semibold rounded-xl text-xs cursor-pointer border border-zinc-700 disabled:opacity-40 transition-colors"
               >
                 <span>Test Channel</span>
               </button>
               <button
                 onClick={() => handleSaveChannel('email')}
                 disabled={saving}
-                className="flex items-center space-x-1.5 py-1.5 px-4 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-slate-950 font-bold rounded-xl text-xs cursor-pointer disabled:opacity-40 transition-colors"
+                className="flex items-center space-x-1.5 py-1.5 px-4 bg-white hover:bg-zinc-200 active:bg-zinc-300 text-black font-bold rounded-xl text-xs cursor-pointer disabled:opacity-40 transition-colors shadow-sm"
               >
                 <Save className="h-3.5 w-3.5" />
                 <span>Save Email Status</span>
@@ -504,15 +499,15 @@ const Settings: React.FC = () => {
           </div>
 
           {/* 3. Public Uptime Sharing configuration card */}
-          <div className="glass-panel rounded-2xl p-6 relative overflow-hidden">
+          <div className="glass-panel rounded-2xl p-6 relative overflow-hidden border border-zinc-800">
             <div className="flex justify-between items-start mb-6">
               <div className="flex items-center space-x-3">
-                <div className="p-3 bg-blue-500/10 rounded-xl border border-blue-500/20">
-                  <Server className="h-5 w-5 text-blue-400" />
+                <div className="p-3 bg-zinc-900 rounded-xl border border-zinc-700">
+                  <Server className="h-5 w-5 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-white uppercase tracking-wider">Public Uptime Sharing</h3>
-                  <p className="text-[10px] text-slate-500 mt-0.5">Allows non-authenticated users to view website status on the login page.</p>
+                  <h3 className="text-sm font-bold text-white uppercase tracking-wider font-mono">Public Uptime Sharing</h3>
+                  <p className="text-[10px] text-zinc-400 mt-0.5">Allows non-authenticated users to view website status on the login page.</p>
                 </div>
               </div>
               <button
@@ -520,17 +515,17 @@ const Settings: React.FC = () => {
                 className="flex items-center focus:outline-none cursor-pointer"
               >
                 {publicStatusEnabled ? (
-                  <ToggleRight className="h-9 w-9 text-emerald-500" />
+                  <ToggleRight className="h-9 w-9 text-white" />
                 ) : (
-                  <ToggleLeft className="h-9 w-9 text-slate-600" />
+                  <ToggleLeft className="h-9 w-9 text-zinc-600" />
                 )}
               </button>
             </div>
 
             <div className="space-y-4">
-              <div className="p-4 rounded-xl border border-white/5 bg-slate-950/20 leading-relaxed text-xs">
-                <p className="text-slate-300 font-semibold mb-1">Status: {publicStatusEnabled ? 'Publicly Enabled' : 'Privately Restricted'}</p>
-                <p className="text-slate-500 text-[10px]">
+              <div className="p-4 rounded-xl border border-zinc-800 bg-zinc-950/40 leading-relaxed text-xs">
+                <p className="text-zinc-200 font-semibold mb-1 font-mono">Status: {publicStatusEnabled ? 'Publicly Enabled' : 'Privately Restricted'}</p>
+                <p className="text-zinc-400 text-[10px]">
                   {publicStatusEnabled 
                     ? "Anyone visiting the sign-in page will be able to see the names and current status (ONLINE/OFFLINE) of all active monitored websites. No detailed metrics or history will be shared."
                     : "Guest users will see a standard login portal. The list of websites is private and requires authentication to view."}
@@ -538,11 +533,11 @@ const Settings: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex justify-end pt-4 mt-4 border-t border-white/5">
+            <div className="flex justify-end pt-4 mt-4 border-t border-zinc-800">
               <button
                 onClick={handleSavePublicStatus}
                 disabled={saving}
-                className="flex items-center space-x-1.5 py-1.5 px-4 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-slate-950 font-bold rounded-xl text-xs cursor-pointer disabled:opacity-40 transition-colors"
+                className="flex items-center space-x-1.5 py-1.5 px-4 bg-white hover:bg-zinc-200 active:bg-zinc-300 text-black font-bold rounded-xl text-xs cursor-pointer disabled:opacity-40 transition-colors shadow-sm"
               >
                 <Save className="h-3.5 w-3.5" />
                 <span>Save Public Share Settings</span>
@@ -552,21 +547,21 @@ const Settings: React.FC = () => {
 
           {/* 4. User Management configuration card (Admin only) */}
           {user?.role === 'admin' && (
-            <div className="glass-panel rounded-2xl p-6 relative overflow-hidden">
+            <div className="glass-panel rounded-2xl p-6 relative overflow-hidden border border-zinc-800">
               <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center space-x-3">
-                  <div className="p-3 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
-                    <Users className="h-5.5 w-5.5 text-emerald-400" />
+                  <div className="p-3 bg-zinc-900 rounded-xl border border-zinc-700">
+                    <Users className="h-5.5 w-5.5 text-white" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-bold text-white uppercase tracking-wider">Console User Accounts</h3>
-                    <p className="text-[10px] text-slate-500 mt-0.5">Manage console administrator, writer, and read-only viewer accounts.</p>
+                    <h3 className="text-sm font-bold text-white uppercase tracking-wider font-mono">Console User Accounts</h3>
+                    <p className="text-[10px] text-zinc-400 mt-0.5">Manage console administrator, writer, and read-only viewer accounts.</p>
                   </div>
                 </div>
 
                 <button
                   onClick={() => setShowAddUserModal(true)}
-                  className="flex items-center space-x-1.5 py-1.5 px-3 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold rounded-xl text-[10px] cursor-pointer transition-colors"
+                  className="flex items-center space-x-1.5 py-1.5 px-3 bg-white hover:bg-zinc-200 active:bg-zinc-300 text-black font-bold rounded-xl text-[10px] cursor-pointer transition-colors shadow-sm"
                 >
                   <UserPlus className="h-3.5 w-3.5" />
                   <span>Add Account</span>
@@ -576,15 +571,15 @@ const Settings: React.FC = () => {
               {/* User list */}
               <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
                 {userLoading ? (
-                  <p className="text-xs text-slate-500 italic">Syncing user nodes...</p>
+                  <p className="text-xs text-zinc-500 italic font-mono">Syncing user nodes...</p>
                 ) : usersList.length === 0 ? (
-                  <p className="text-xs text-slate-500 italic">No user accounts found.</p>
+                  <p className="text-xs text-zinc-500 italic font-mono">No user accounts found.</p>
                 ) : (
                   usersList.map((usr) => (
-                    <div key={usr.id} className="flex justify-between items-center p-3 rounded-xl bg-slate-950/25 border border-white/5 text-xs">
-                      <div className="truncate max-w-[55%]">
-                        <p className="text-slate-200 font-medium truncate" title={usr.email}>{usr.email}</p>
-                        <p className="text-[9px] text-slate-500 mt-0.5">Registered: {new Date(usr.created_at).toLocaleDateString()}</p>
+                    <div key={usr.id} className="flex justify-between items-center p-3 rounded-xl bg-zinc-950/60 border border-zinc-800 text-xs">
+                      <div className="truncate max-w-[55%] font-mono">
+                        <p className="text-zinc-200 font-medium truncate" title={usr.email}>{usr.email}</p>
+                        <p className="text-[9px] text-zinc-500 mt-0.5">Registered: {new Date(usr.created_at).toLocaleDateString()}</p>
                       </div>
 
                       <div className="flex items-center space-x-3">
@@ -593,7 +588,7 @@ const Settings: React.FC = () => {
                           value={usr.role}
                           onChange={(e) => handleChangeRole(usr.id, e.target.value as any)}
                           disabled={usr.id === user.id}
-                          className="bg-[#080c14] border border-white/10 rounded-lg py-1 px-2 text-[10px] text-slate-300 focus:outline-none focus:border-emerald-500"
+                          className="bg-zinc-950 border border-zinc-700 rounded-lg py-1 px-2 text-[10px] text-zinc-300 focus:outline-none focus:border-white font-mono"
                         >
                           <option value="admin">Admin</option>
                           <option value="user">User</option>
@@ -604,7 +599,7 @@ const Settings: React.FC = () => {
                         <button
                           onClick={() => handleDeleteUser(usr.id, usr.email)}
                           disabled={usr.id === user.id}
-                          className="p-1.5 bg-slate-900/30 hover:bg-rose-900/40 text-slate-500 hover:text-rose-400 rounded-lg border border-white/5 cursor-pointer disabled:opacity-20 disabled:pointer-events-none transition-colors"
+                          className="p-1.5 bg-zinc-900 hover:bg-black text-zinc-400 hover:text-white rounded-lg border border-zinc-700 cursor-pointer disabled:opacity-20 disabled:pointer-events-none transition-colors"
                           title="Remove user account"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
@@ -619,12 +614,12 @@ const Settings: React.FC = () => {
         </section>
 
         {/* Right Side: Security Audit Logs (1 col) */}
-        <section className="glass-panel p-6 rounded-2xl flex flex-col h-[520px] overflow-hidden">
+        <section className="glass-panel p-6 rounded-2xl flex flex-col h-[520px] overflow-hidden border border-zinc-800">
           <div className="flex items-center space-x-2.5 mb-2">
-            <Server className="h-4.5 w-4.5 text-slate-500" />
-            <h3 className="text-xs font-bold text-white uppercase tracking-wider">Console Audit Logs</h3>
+            <Server className="h-4.5 w-4.5 text-zinc-400" />
+            <h3 className="text-xs font-bold text-white uppercase tracking-wider font-mono">Console Audit Logs</h3>
           </div>
-          <p className="text-[10px] text-slate-500 leading-relaxed mb-6 border-b border-white/5 pb-3">
+          <p className="text-[10px] text-zinc-400 leading-relaxed mb-6 border-b border-zinc-800 pb-3 font-mono">
             Tracks user interactions, deletions, logins, and configurations for self-hosted security compliance.
           </p>
 
@@ -632,48 +627,36 @@ const Settings: React.FC = () => {
           <div className="flex-grow overflow-y-auto space-y-4 pr-1">
             {logs.map((log) => {
               let actionTitle = log.action;
-              let actionColor = 'text-slate-300';
-              let iconClass = 'bg-slate-900/60 text-slate-400 border-slate-800';
 
               if (log.action.includes('register')) {
                 actionTitle = 'System Bootstrapped';
-                actionColor = 'text-emerald-400';
-                iconClass = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
               } else if (log.action.includes('create')) {
                 actionTitle = 'Created Checkpoint';
-                actionColor = 'text-emerald-300';
-                iconClass = 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20';
               } else if (log.action.includes('delete')) {
                 actionTitle = 'Deleted Checkpoint';
-                actionColor = 'text-rose-400';
-                iconClass = 'bg-rose-500/10 text-rose-400 border-rose-500/20';
               } else if (log.action.includes('login')) {
                 actionTitle = 'Terminal Sign In';
-                actionColor = 'text-blue-400';
-                iconClass = 'bg-blue-500/10 text-blue-400 border-blue-500/20';
               } else if (log.action.includes('update')) {
                 actionTitle = 'Updated Config';
-                actionColor = 'text-blue-300';
-                iconClass = 'bg-blue-500/10 text-blue-300 border-blue-500/20';
               }
 
               return (
                 <div key={log.id} className="flex space-x-3 text-[11px] leading-relaxed">
-                  <div className={`p-1.5 rounded-lg border flex-shrink-0 flex items-center justify-center h-7 w-7 ${iconClass}`}>
+                  <div className="p-1.5 rounded-lg border border-zinc-700 bg-zinc-900 text-white flex-shrink-0 flex items-center justify-center h-7 w-7">
                     <ShieldCheck className="h-4 w-4" />
                   </div>
                   <div>
-                    <div className="flex items-center space-x-2">
-                      <span className={`font-bold ${actionColor}`}>{actionTitle}</span>
-                      <span className="text-[9px] text-slate-500">•</span>
-                      <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">{log.resource}</span>
+                    <div className="flex items-center space-x-2 font-mono">
+                      <span className="font-bold text-white">{actionTitle}</span>
+                      <span className="text-[9px] text-zinc-500">•</span>
+                      <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider">{log.resource}</span>
                     </div>
                     
                     {log.ip_address && (
-                      <div className="text-[9px] text-slate-500 mt-0.5">IP Address: {log.ip_address}</div>
+                      <div className="text-[9px] text-zinc-500 mt-0.5 font-mono">IP Address: {log.ip_address}</div>
                     )}
                     
-                    <div className="flex items-center space-x-1.5 text-[9px] text-slate-500 mt-1">
+                    <div className="flex items-center space-x-1.5 text-[9px] text-zinc-400 mt-1 font-mono">
                       <Clock className="h-3 w-3" />
                       <span>{new Date(log.created_at).toLocaleString()}</span>
                     </div>
@@ -683,7 +666,7 @@ const Settings: React.FC = () => {
             })}
             
             {logs.length === 0 && (
-              <div className="text-center py-12 text-slate-600 italic text-[10px]">
+              <div className="text-center py-12 text-zinc-500 italic text-[10px] font-mono">
                 No security logs recorded.
               </div>
             )}
@@ -692,12 +675,12 @@ const Settings: React.FC = () => {
       </main>
 
       {showAddUserModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md">
-          <div className="w-full max-w-md rounded-2xl glass-panel p-6 md:p-8 animate-in fade-in zoom-in-95 duration-150 border border-white/10 shadow-2xl relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+          <div className="w-full max-w-md rounded-2xl glass-panel p-6 md:p-8 animate-in fade-in zoom-in-95 duration-150 border border-zinc-700 shadow-2xl relative">
             
             {/* Modal Header */}
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-base font-bold text-white">
+              <h3 className="text-base font-bold text-white font-mono">
                 Register Console Account
               </h3>
               <button 
@@ -705,14 +688,14 @@ const Settings: React.FC = () => {
                   setShowAddUserModal(false);
                   setUserFormError('');
                 }}
-                className="p-1 text-slate-500 hover:text-white hover:bg-white/5 rounded-md cursor-pointer transition-colors"
+                className="p-1 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-md cursor-pointer transition-colors"
               >
                 <X className="h-4.5 w-4.5" />
               </button>
             </div>
 
             {userFormError && (
-              <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-xs text-red-400 font-medium">
+              <div className="mb-4 p-3 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white font-medium font-mono">
                 {userFormError}
               </div>
             )}
@@ -720,35 +703,35 @@ const Settings: React.FC = () => {
             {/* Form */}
             <form onSubmit={handleAddUser} className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-xs text-slate-400 font-medium block">Account Email</label>
+                <label className="text-xs text-zinc-400 font-medium block font-mono">Account Email</label>
                 <input
                   type="email"
                   value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
                   placeholder="user@example.com"
-                  className="w-full bg-[#080c14] border border-white/10 rounded-xl py-2 px-3.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
+                  className="w-full bg-zinc-950 border border-zinc-700 rounded-xl py-2 px-3.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-white transition-colors font-mono"
                   required
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs text-slate-400 font-medium block">Temporary Password</label>
+                <label className="text-xs text-zinc-400 font-medium block font-mono">Temporary Password</label>
                 <input
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-[#080c14] border border-white/10 rounded-xl py-2 px-3.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
+                  className="w-full bg-zinc-950 border border-zinc-700 rounded-xl py-2 px-3.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-white transition-colors font-mono"
                   required
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs text-slate-400 font-medium block">Access Privilege Level</label>
+                <label className="text-xs text-zinc-400 font-medium block font-mono">Access Privilege Level</label>
                 <select
                   value={newRole}
                   onChange={(e) => setNewRole(e.target.value as any)}
-                  className="w-full bg-[#080c14] border border-white/10 rounded-xl py-2 px-3 text-xs text-white focus:outline-none focus:border-emerald-500 transition-colors"
+                  className="w-full bg-zinc-950 border border-zinc-700 rounded-xl py-2 px-3 text-xs text-white focus:outline-none focus:border-white transition-colors font-mono"
                 >
                   <option value="viewer">Viewer (Read-only)</option>
                   <option value="user">User (Manage checkpoints)</option>
@@ -764,13 +747,13 @@ const Settings: React.FC = () => {
                     setShowAddUserModal(false);
                     setUserFormError('');
                   }}
-                  className="py-2 px-4 bg-slate-900/60 hover:bg-slate-900 text-slate-400 hover:text-white rounded-xl text-xs font-semibold cursor-pointer border border-white/5 hover:border-white/10 transition-colors"
+                  className="py-2 px-4 bg-zinc-900 hover:bg-black text-zinc-400 hover:text-white rounded-xl text-xs font-semibold cursor-pointer border border-zinc-700 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="py-2 px-4 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-slate-950 font-bold rounded-xl text-xs cursor-pointer transition-colors"
+                  className="py-2 px-4 bg-white hover:bg-zinc-200 active:bg-zinc-300 text-black font-bold rounded-xl text-xs cursor-pointer transition-colors shadow-sm"
                 >
                   Create User
                 </button>

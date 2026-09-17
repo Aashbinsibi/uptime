@@ -14,10 +14,10 @@ const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => 
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#080c14]">
-        <div className="flex flex-col items-center">
-          <Activity className="h-8 w-8 text-emerald-500 animate-spin" />
-          <p className="mt-4 text-xs text-slate-500 tracking-wider">Syncing secure console session...</p>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center glass-panel p-6 rounded-2xl shadow-xl border border-white/10">
+          <Activity className="h-8 w-8 text-white animate-spin" />
+          <p className="mt-4 text-xs text-zinc-400 tracking-wider">Syncing secure console session...</p>
         </div>
       </div>
     );
