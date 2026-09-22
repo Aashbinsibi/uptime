@@ -8,7 +8,8 @@ import {
   Trash2, Edit3, Power, ExternalLink, ShieldAlert, Cpu, HardDrive, 
   Boxes, X, ShieldCheck, Mail, Slack, Terminal, Eye
 } from 'lucide-react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
+import ApiMonitoringDashboard from './ApiMonitoringDashboard';
 
 interface Website {
   id: string;
@@ -68,18 +69,22 @@ const previewMicroservices: MicroserviceItem[] = [
   { id: '3', name: 'Redis Cache & Event Bus', endpoint: 'redis://cache.internal:6379', protocol: 'Redis', uptime: '99.95%', latency: 3 },
 ];
 
-export type TabType = 'home' | 'websites' | 'servers' | 'microservices' | 'alerts' | 'settings' | 'users';
+export type TabType = 'home' | 'apis' | 'websites' | 'servers' | 'microservices' | 'alerts' | 'settings' | 'users';
 
 const Dashboard: React.FC = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Active navigation tab
   const tabParam = searchParams.get('tab') as any;
-  const [activeTab, setActiveTab] = useState<TabType>(
-    ['home', 'websites', 'servers', 'microservices', 'alerts', 'settings', 'users'].includes(tabParam) ? tabParam : 'home'
-  );
+  const initialTab = location.pathname === '/apis' 
+    ? 'apis' 
+    : ['home', 'apis', 'websites', 'servers', 'microservices', 'alerts', 'settings', 'users'].includes(tabParam) 
+    ? tabParam 
+    : 'home';
+  const [activeTab, setActiveTab] = useState<TabType>(initialTab);
 
   // Sync tab with URL
   const handleTabChange = (tab: TabType) => {
@@ -89,6 +94,8 @@ const Dashboard: React.FC = () => {
 
   // Data states
   const [websites, setWebsites] = useState<Website[]>([]);
+  const [apiEndpoints, setApiEndpoints] = useState<any[]>([]);
+  const [sloOverview, setSloOverview] = useState<any | null>(null);
   const [alerts, setAlerts] = useState<AlertItem[]>([]);
   const [channels, setChannels] = useState<AlertChannel[]>([]);
   const [usersList, setUsersList] = useState<ConsoleUser[]>([]);
@@ -132,6 +139,20 @@ const Dashboard: React.FC = () => {
       const { data: webRes } = await api.get('/api/websites');
       if (webRes.success) {
         setWebsites(webRes.data);
+      }
+
+      // Production APIs & SLOs
+      try {
+        const { data: apiRes } = await api.get('/api/api-monitoring/endpoints');
+        if (apiRes.success) {
+          setApiEndpoints(apiRes.data);
+        }
+        const { data: ovRes } = await api.get('/api/api-monitoring/overview');
+        if (ovRes.success) {
+          setSloOverview(ovRes.data);
+        }
+      } catch (err) {
+        console.error('[Dashboard] Error fetching API monitoring data:', err);
       }
 
       // Alerts
@@ -499,6 +520,22 @@ const Dashboard: React.FC = () => {
               <span className="hidden sm:inline">Home</span>
             </button>
 
+            {/* Production APIs & SLOs */}
+            <button
+              onClick={() => handleTabChange('apis')}
+              className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                activeTab === 'apis'
+                  ? 'bg-white text-black font-bold shadow-sm'
+                  : 'text-zinc-400 hover:text-white hover:bg-zinc-900 border border-transparent'
+              }`}
+            >
+              <Terminal className="h-4 w-4" />
+              <span>APIs & SLOs</span>
+              <span className="text-[9px] font-mono font-bold bg-zinc-800 text-zinc-200 px-1.5 py-0.5 rounded ml-1 uppercase">
+                SRE
+              </span>
+            </button>
+
             {/* Websites */}
             <button
               onClick={() => handleTabChange('websites')}
@@ -636,9 +673,35 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
 
-            {/* 4 METRIC CARDS GRID */}
-            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* 5 METRIC CARDS GRID */}
+            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
               
+              {/* Card 0: PRODUCTION APIS & SLOS */}
+              <div 
+                onClick={() => handleTabChange('apis')}
+                className="bg-zinc-950/90 border border-zinc-800 hover:border-zinc-700 rounded-2xl p-5 cursor-pointer transition-all duration-200 group relative shadow-sm hover:shadow-md hover:-translate-y-0.5"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Terminal className="h-4 w-4 text-white" />
+                    <span className="text-[11px] font-mono font-semibold tracking-wider text-zinc-400 uppercase">
+                      APIS & SLOS
+                    </span>
+                  </div>
+                  <span className="px-2 py-0.5 text-[9px] font-mono font-bold uppercase tracking-wider bg-zinc-800 text-zinc-200 rounded-full border border-zinc-700">
+                    SRE
+                  </span>
+                </div>
+                
+                <div className="text-2xl font-extrabold text-white font-mono mt-3">
+                  P50/P95/P99
+                </div>
+
+                <div className="text-xs text-zinc-400 font-mono mt-2 flex items-center space-x-1.5">
+                  <span className="text-white font-medium">SLO Burn Rates &rarr;</span>
+                </div>
+              </div>
+
               {/* Card 1: WEBSITES */}
               <div 
                 onClick={() => handleTabChange('websites')}
@@ -824,13 +887,187 @@ const Dashboard: React.FC = () => {
               </div>
             </section>
 
-            {/* MONITORED WEBSITES & ENDPOINTS (Accessible directly on Homepage) */}
+            {/* PRODUCTION API OBSERVABILITY & SRE SLOS (Accessible directly on Homepage) */}
+            <section className="pt-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                <div>
+                  <div className="flex items-center space-x-2.5">
+                    <h2 className="text-xs font-mono font-bold tracking-wider text-white uppercase flex items-center space-x-2">
+                      <Terminal className="h-4 w-4 text-white" />
+                      <span>PRODUCTION APIS & SRE SLOS</span>
+                    </h2>
+                    <span className="px-2 py-0.5 text-[9px] font-mono font-bold uppercase tracking-widest bg-zinc-800 text-zinc-200 rounded-full border border-zinc-700">
+                      SRE Engine
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-zinc-400 mt-0.5 font-sans">
+                    Golden Signals (P50/P95/P99 latency percentiles), 30-day error budget burn rates, and per-deployment regression detection.
+                  </p>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => handleTabChange('apis')}
+                    className="flex items-center space-x-1.5 py-1.5 px-3.5 bg-white hover:bg-zinc-200 active:bg-zinc-300 text-black font-bold rounded-xl text-xs font-mono cursor-pointer transition-all shadow-sm"
+                  >
+                    <span>View SRE Suite</span>
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Quick Golden Signals Strip */}
+              {sloOverview && (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4 font-mono text-xs">
+                  <div className="p-3 bg-zinc-950/80 rounded-xl border border-zinc-800">
+                    <span className="text-[10px] text-zinc-500 uppercase block">P95 Tail Latency</span>
+                    <span className="text-base font-bold text-white mt-0.5 block">
+                      {sloOverview.golden_signals?.latency?.p95_ms || 0} ms
+                    </span>
+                    <span className="text-[10px] text-zinc-400">P50: {sloOverview.golden_signals?.latency?.p50_ms || 0}ms · P99: {sloOverview.golden_signals?.latency?.p99_ms || 0}ms</span>
+                  </div>
+
+                  <div className="p-3 bg-zinc-950/80 rounded-xl border border-zinc-800">
+                    <span className="text-[10px] text-zinc-500 uppercase block">5xx Error Rate</span>
+                    <span className="text-base font-bold text-white mt-0.5 block">
+                      {sloOverview.golden_signals?.errors?.rate_5xx || 0}%
+                    </span>
+                    <span className="text-[10px] text-zinc-400">4xx: {sloOverview.golden_signals?.errors?.rate_4xx || 0}% · Target: &lt;1.0%</span>
+                  </div>
+
+                  <div className="p-3 bg-zinc-950/80 rounded-xl border border-zinc-800">
+                    <span className="text-[10px] text-zinc-500 uppercase block">API Throughput</span>
+                    <span className="text-base font-bold text-white mt-0.5 block">
+                      {sloOverview.golden_signals?.traffic?.rps || 0} req/s
+                    </span>
+                    <span className="text-[10px] text-zinc-400">{sloOverview.golden_signals?.traffic?.requests_last_5m || 0} calls / 5m</span>
+                  </div>
+
+                  <div className="p-3 bg-zinc-950/80 rounded-xl border border-zinc-800">
+                    <span className="text-[10px] text-zinc-500 uppercase block">30-Day Error Budget</span>
+                    <span className="text-base font-bold text-white mt-0.5 block">
+                      {sloOverview.slo_overview?.average_error_budget_remaining_percent || 100}%
+                    </span>
+                    <span className="text-[10px] text-zinc-400">Remaining Budget</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Endpoints Table or Seed Banner */}
+              {apiEndpoints.length === 0 ? (
+                <div className="p-6 text-center bg-zinc-950/70 border border-zinc-800 rounded-2xl mb-8">
+                  <Terminal className="h-8 w-8 text-zinc-500 mx-auto mb-2" />
+                  <p className="text-xs font-semibold text-zinc-200 font-mono">No Production API Endpoints Monitored Yet.</p>
+                  <p className="text-[11px] text-zinc-500 mt-1 max-w-md mx-auto font-sans">
+                    Register REST/JSON endpoints to track P50/P95/P99 percentiles, Google SRE burn-rate alerts, and deployment regression deltas.
+                  </p>
+                  <div className="mt-4 flex items-center justify-center space-x-3">
+                    <button
+                      onClick={async () => {
+                        await api.post('/api/api-monitoring/seed');
+                        fetchAllData();
+                      }}
+                      className="px-3.5 py-1.5 bg-white text-black font-bold rounded-xl text-xs font-mono cursor-pointer shadow-sm hover:bg-zinc-200"
+                    >
+                      ⚡ Seed Demo APIs & Baselines
+                    </button>
+                    <button
+                      onClick={() => handleTabChange('apis')}
+                      className="px-3.5 py-1.5 bg-zinc-900 border border-zinc-700 text-zinc-300 font-semibold rounded-xl text-xs font-mono cursor-pointer hover:bg-zinc-800"
+                    >
+                      + Add API Endpoint
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-zinc-900/90 border border-zinc-800 rounded-2xl overflow-hidden shadow-md mb-8">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left font-mono text-xs">
+                      <thead className="bg-zinc-950/60 text-zinc-400 border-b border-zinc-800 uppercase text-[10px] tracking-wider">
+                        <tr>
+                          <th className="p-3.5">API Target & Method</th>
+                          <th className="p-3.5">Version</th>
+                          <th className="p-3.5">P50 / P95 / P99 Latency</th>
+                          <th className="p-3.5">SLO Target</th>
+                          <th className="p-3.5 text-right">Details</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-zinc-800/60">
+                        {apiEndpoints.slice(0, 5).map(ep => {
+                          const p50 = ep.live_metrics_5m?.p50_ms || ep.baseline_p50 || 0;
+                          const p95 = ep.live_metrics_5m?.p95_ms || ep.baseline_p95 || 0;
+                          const p99 = ep.live_metrics_5m?.p99_ms || ep.baseline_p99 || 0;
+                          const isBreached = p95 > ep.slo_latency_p95_ms;
+
+                          return (
+                            <tr key={ep.id} className="hover:bg-zinc-800/30 transition-colors">
+                              <td className="p-3.5">
+                                <div className="flex items-center space-x-2">
+                                  <span className="px-2 py-0.5 rounded text-[10px] uppercase font-bold bg-zinc-800 text-white border border-zinc-700">
+                                    {ep.http_method}
+                                  </span>
+                                  <span 
+                                    onClick={() => handleTabChange('apis')}
+                                    className="font-bold text-white hover:underline cursor-pointer"
+                                  >
+                                    {ep.name}
+                                  </span>
+                                </div>
+                                <div className="text-[11px] text-zinc-500 truncate max-w-sm mt-0.5">
+                                  [{ep.service_name}] {ep.path}
+                                </div>
+                              </td>
+
+                              <td className="p-3.5">
+                                <span className="font-bold text-zinc-200">{ep.current_deployment_version}</span>
+                                {ep.previous_deployment_version && (
+                                  <span className="text-[10px] text-zinc-500 block">prev: {ep.previous_deployment_version}</span>
+                                )}
+                              </td>
+
+                              <td className="p-3.5">
+                                <div className="flex items-center space-x-1.5 text-[11px]">
+                                  <span className="text-zinc-400">P50: <strong>{p50}ms</strong></span>
+                                  <span>·</span>
+                                  <span className={isBreached ? 'text-white font-bold bg-black px-1.5 py-0.5 rounded border border-white' : 'text-white font-bold'}>
+                                    P95: {p95}ms
+                                  </span>
+                                  <span>·</span>
+                                  <span className="text-zinc-400">P99: <strong>{p99}ms</strong></span>
+                                </div>
+                              </td>
+
+                              <td className="p-3.5">
+                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${isBreached ? 'bg-black text-white border border-white' : 'bg-zinc-800 text-white border border-zinc-600'}`}>
+                                  {isBreached ? 'Breaching' : 'Meeting'} {ep.slo_latency_p95_ms}ms SLO
+                                </span>
+                              </td>
+
+                              <td className="p-3.5 text-right">
+                                <button
+                                  onClick={() => handleTabChange('apis')}
+                                  className="px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white border border-zinc-700 text-[10px] font-semibold transition-all cursor-pointer"
+                                >
+                                  View SRE &rarr;
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </section>
+
+            {/* MONITORED WEBSITES (HTTP / SSL) */}
             <section className="pt-2">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                 <div>
                   <h2 className="text-xs font-mono font-bold tracking-wider text-zinc-400 uppercase flex items-center space-x-2">
                     <Globe className="h-4 w-4 text-white" />
-                    <span>MONITORED WEBSITES & ENDPOINTS</span>
+                    <span>MONITORED WEBSITES (HTTP / SSL)</span>
                   </h2>
                   <p className="text-[11px] text-zinc-500 mt-0.5">
                     Real-time HTTP availability checks and SSL certificate expiry monitors.
@@ -1186,6 +1423,13 @@ const Dashboard: React.FC = () => {
             </div>
 
           </div>
+        )}
+
+        {/* ======================================================== */}
+        {/* TAB: APIS & SLOS (PRODUCTION API OBSERVABILITY ENGINE)   */}
+        {/* ======================================================== */}
+        {activeTab === 'apis' && (
+          <ApiMonitoringDashboard />
         )}
 
         {/* ======================================================== */}
@@ -1991,6 +2235,25 @@ const Dashboard: React.FC = () => {
             {formError && (
               <div className="p-3 mb-4 rounded-xl bg-zinc-900 border border-white text-white text-xs">
                 {formError}
+              </div>
+            )}
+
+            {!editingSite && (
+              <div className="mb-4 p-3 rounded-xl bg-zinc-900/90 border border-zinc-700/80 flex items-center justify-between">
+                <div>
+                  <span className="text-white font-bold block text-xs">Monitoring a REST / GraphQL API?</span>
+                  <span className="text-[11px] text-zinc-400">Configure HTTP methods, headers, payloads, & SRE SLOs.</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsModalOpen(false);
+                    handleTabChange('apis');
+                  }}
+                  className="px-3 py-1 bg-white hover:bg-zinc-200 text-black font-bold rounded-lg text-xs cursor-pointer shadow-sm ml-2 shrink-0"
+                >
+                  Open API Builder &rarr;
+                </button>
               </div>
             )}
 

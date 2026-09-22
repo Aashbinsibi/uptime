@@ -17,8 +17,10 @@ const getEmailTransporter = () => {
   });
 };
 
+export type AlertEventType = 'down' | 'resolved' | 'ssl_expiring' | 'fast_burn' | 'slow_burn' | 'regression' | 'slow';
+
 // 1. Refactored Trigger: Enqueues jobs instead of executing HTTP/SMTP calls synchronously
-export const triggerNotifications = async (website: any, eventType: 'down' | 'resolved' | 'ssl_expiring', message: string) => {
+export const triggerNotifications = async (website: any, eventType: AlertEventType, message: string) => {
   try {
     const userId = website.user_id;
 
@@ -83,9 +85,10 @@ export const triggerNotifications = async (website: any, eventType: 'down' | 're
 };
 
 // 2. Job Handlers (consumed by the Bull worker)
-export const sendEmailAlert = async (website: any, eventType: 'down' | 'resolved' | 'ssl_expiring', message: string) => {
-  const isDown = eventType === 'down';
+export const sendEmailAlert = async (website: any, eventType: AlertEventType, message: string) => {
+  const isDown = eventType === 'down' || eventType === 'fast_burn';
   const isSsl = eventType === 'ssl_expiring';
+  const isWarning = eventType === 'slow_burn' || eventType === 'regression' || eventType === 'slow';
   
   let statusText = 'UP 🟢';
   let badgeColor = '#d4edda';

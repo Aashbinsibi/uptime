@@ -44,6 +44,14 @@ function App() {
             } 
           />
           <Route 
+            path="/apis" 
+            element={
+              <PrivateRoute>
+                <Dashboard />
+              </PrivateRoute>
+            } 
+          />
+          <Route 
             path="/websites/:id" 
             element={
               <PrivateRoute>
