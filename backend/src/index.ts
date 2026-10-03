@@ -8,6 +8,7 @@ import { initDb } from './db/init';
 import { initSocket } from './services/socket';
 import { startMonitoring } from './services/monitor';
 import { startApiMonitoring } from './services/apiMonitor';
+import { startAgentHealthMonitor } from './services/agentHealthMonitor';
 import { initNotificationWorker } from './services/notifier';
 import logger from './services/logger';
 
@@ -18,6 +19,8 @@ import alertsRouter from './routes/alerts';
 import publicRouter from './routes/public';
 import usersRouter from './routes/users';
 import apiMonitoringRouter from './routes/apiMonitoring';
+import agentRouter from './routes/agent';
+import serversRouter from './routes/servers';
 
 
 // Load environment variables
@@ -89,6 +92,8 @@ app.use('/api/alerts', alertsRouter);
 app.use('/api/public', publicRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/api-monitoring', apiMonitoringRouter);
+app.use('/api/agent', agentRouter);
+app.use('/api/servers', serversRouter);
 
 // Root path handler
 app.get('/', (req: Request, res: Response) => {
@@ -116,9 +121,10 @@ const bootstrap = async () => {
     // 2. Initialize Redis-backed Bull background notification queue consumer
     initNotificationWorker();
 
-    // 3. Start monitoring background tasks (Websites & Production APIs)
+    // 3. Start monitoring background tasks (Websites, Production APIs, and Server Agents)
     startMonitoring();
     startApiMonitoring();
+    startAgentHealthMonitor();
 
     // 4. Listen on HTTP port
     httpServer.listen(PORT, () => {

@@ -5,11 +5,12 @@ import io from 'socket.io-client';
 import { 
   Activity, LayoutGrid, Globe, Server, Bell, Settings as SettingsIcon, 
   Users, LogOut, CheckCircle2, ChevronRight, Search, Plus, RefreshCw, 
-  Trash2, Edit3, Power, ExternalLink, ShieldAlert, Cpu, HardDrive, 
+  Trash2, Edit3, Power, ExternalLink, ShieldAlert, Cpu,
   Boxes, X, ShieldCheck, Mail, Slack, Terminal, Eye
 } from 'lucide-react';
 import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import ApiMonitoringDashboard from './ApiMonitoringDashboard';
+import ServerMonitoring from './ServerMonitoring';
 
 interface Website {
   id: string;
@@ -100,6 +101,7 @@ const Dashboard: React.FC = () => {
   const [channels, setChannels] = useState<AlertChannel[]>([]);
   const [usersList, setUsersList] = useState<ConsoleUser[]>([]);
   const [publicStatusEnabled, setPublicStatusEnabled] = useState(false);
+  const [serversList, setServersList] = useState<any[]>([]);
   
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -189,6 +191,16 @@ const Dashboard: React.FC = () => {
         }
       } catch (err) {
         // non-admin might receive 403
+      }
+
+      // Servers Fleet
+      try {
+        const { data: srvRes } = await api.get('/api/servers');
+        if (srvRes.success && Array.isArray(srvRes.data)) {
+          setServersList(srvRes.data);
+        }
+      } catch (err) {
+        // ignore
       }
     } catch (error) {
       console.error('[Dashboard] Error fetching resources:', error);
@@ -561,7 +573,7 @@ const Dashboard: React.FC = () => {
               <Server className="h-4 w-4" />
               <span className="hidden sm:inline">Servers</span>
               <span className="text-[9px] font-mono font-bold bg-zinc-800 text-zinc-300 px-1.5 py-0.5 rounded ml-1 uppercase">
-                Soon
+                {serversList.length > 0 ? serversList.length : 'Fleet'}
               </span>
             </button>
 
@@ -740,17 +752,25 @@ const Dashboard: React.FC = () => {
                       SERVERS
                     </span>
                   </div>
-                  <span className="px-2 py-0.5 text-[9px] font-mono font-bold uppercase tracking-wider bg-zinc-900 text-zinc-300 rounded-full border border-zinc-800">
-                    Soon
-                  </span>
+                  <ChevronRight className="h-4 w-4 text-zinc-600 group-hover:text-zinc-300 group-hover:translate-x-0.5 transition-all" />
                 </div>
                 
-                <div className="text-2xl font-extrabold text-white font-mono mt-3">
-                  Agent
+                <div className="text-3xl font-extrabold text-white font-mono mt-3">
+                  {serversList.length}
                 </div>
 
                 <div className="text-xs text-zinc-400 font-mono mt-2 flex items-center space-x-1.5">
-                  <span className="text-zinc-300 font-medium">Available Soon</span>
+                  <span className="text-white font-medium">
+                    {serversList.filter(s => s.agent_status === 'ONLINE').length} online
+                  </span>
+                  <span>·</span>
+                  <span>
+                    {serversList.length === 0
+                      ? 'none yet'
+                      : serversList.filter(s => s.agent_status !== 'ONLINE').length > 0
+                      ? `${serversList.filter(s => s.agent_status !== 'ONLINE').length} issues`
+                      : 'all healthy'}
+                  </span>
                 </div>
               </div>
 
@@ -1610,125 +1630,10 @@ const Dashboard: React.FC = () => {
 
         {/* ======================================================== */}
         {/* ======================================================== */}
-        {/* TAB: SERVERS (ANTIGRAVITY SERVER AGENT - AVAILABLE SOON) */}
+        {/* TAB: SERVERS (UPTIME / GRAVITY FLEET MONITORING)          */}
         {/* ======================================================== */}
         {activeTab === 'servers' && (
-          <div className="space-y-8 animate-fadeIn max-w-5xl mx-auto">
-            {/* Header / Intro */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-300 pb-6">
-              <div>
-                <div className="flex items-center space-x-3">
-                  <h1 className="text-2xl font-bold text-black tracking-tight font-mono">
-                    Antigravity Server Agent
-                  </h1>
-                  <span className="px-2.5 py-0.5 text-[10px] font-mono font-bold uppercase tracking-widest bg-zinc-800 text-zinc-200 rounded-full border border-zinc-700">
-                    Available Soon
-                  </span>
-                </div>
-                <p className="text-xs text-zinc-600 mt-1 font-mono">
-                  Lightweight, single-binary daemon for real-time host and infrastructure diagnostics.
-                </p>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => handleTabChange('websites')}
-                  className="px-3.5 py-1.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white rounded-xl text-xs font-mono font-semibold border border-zinc-800 transition-all cursor-pointer"
-                >
-                  View Monitored Websites
-                </button>
-              </div>
-            </div>
-
-            {/* Hero Card */}
-            <div className="bg-zinc-950/90 border border-zinc-800 rounded-3xl p-8 md:p-12 text-center relative overflow-hidden shadow-xl">
-              {/* Central Graphic */}
-              <div className="relative inline-flex items-center justify-center mb-6">
-                <div className="p-5 bg-black rounded-2xl border border-zinc-700 shadow-2xl">
-                  <Server className="h-12 w-12 text-white animate-pulse" />
-                </div>
-                <span className="absolute -bottom-2 px-3 py-0.5 bg-zinc-900 text-zinc-300 text-[9px] font-mono font-bold uppercase rounded-full tracking-widest border border-zinc-700 shadow-md">
-                  In Active Development
-                </span>
-              </div>
-
-              <h2 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight font-mono max-w-xl mx-auto">
-                Antigravity Server Agent will be available soon
-              </h2>
-
-              <p className="text-zinc-400 text-xs md:text-sm mt-3 max-w-2xl mx-auto leading-relaxed font-mono">
-                The native Antigravity Server Agent is currently in active development. Once released, you will be able to install the daemon with a single command on any Linux node, cloud instance, or Docker container to stream live CPU, memory, disk, and load metrics directly to this console.
-              </p>
-
-              {/* Install Preview Snippet */}
-              <div className="mt-8 max-w-xl mx-auto bg-black border border-zinc-800 rounded-2xl p-4 text-left font-mono shadow-inner">
-                <div className="flex items-center justify-between text-[10px] text-zinc-500 border-b border-zinc-800 pb-2 mb-3">
-                  <span className="flex items-center space-x-1.5">
-                    <Terminal className="h-3 w-3 text-zinc-400" />
-                    <span>Upcoming Agent One-Line Install</span>
-                  </span>
-                  <span className="text-[9px] uppercase tracking-wider text-zinc-500">Preview</span>
-                </div>
-                <div className="text-xs text-zinc-300 flex items-center justify-between overflow-x-auto">
-                  <code className="text-zinc-300 select-all font-mono">
-                    curl -sSL https://agent.antigravity.io/install.sh | sudo bash
-                  </code>
-                  <span className="ml-2 text-[10px] text-zinc-500 font-bold uppercase tracking-wider whitespace-nowrap">
-                    Soon
-                  </span>
-                </div>
-              </div>
-
-              {/* Platforms */}
-              <div className="mt-6 flex flex-wrap items-center justify-center gap-2 text-[10px] font-mono text-zinc-400">
-                <span className="text-zinc-500">Supported Platforms:</span>
-                {['Ubuntu', 'Debian', 'Alpine', 'RHEL / CentOS', 'Docker', 'Kubernetes'].map(os => (
-                  <span key={os} className="px-2 py-0.5 bg-zinc-900 border border-zinc-800 rounded-md text-zinc-300">
-                    {os}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* Feature Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              <div className="bg-zinc-900/90 border border-zinc-800 rounded-2xl p-6 shadow-md text-left">
-                <div className="p-2.5 rounded-xl bg-black border border-zinc-800 w-fit mb-4 text-white">
-                  <Cpu className="h-5 w-5" />
-                </div>
-                <h3 className="text-xs font-bold text-white uppercase tracking-wider font-mono">
-                  CPU & Multicore Metrics
-                </h3>
-                <p className="text-[11px] text-zinc-400 font-mono leading-relaxed mt-2">
-                  Per-core processor tracking, load averages (1m, 5m, 15m), and high-utilization process alarms to detect spikes before performance degrades.
-                </p>
-              </div>
-
-              <div className="bg-zinc-900/90 border border-zinc-800 rounded-2xl p-6 shadow-md text-left">
-                <div className="p-2.5 rounded-xl bg-black border border-zinc-800 w-fit mb-4 text-white">
-                  <Activity className="h-5 w-5" />
-                </div>
-                <h3 className="text-xs font-bold text-white uppercase tracking-wider font-mono">
-                  Memory & RAM Exhaustion
-                </h3>
-                <p className="text-[11px] text-zinc-400 font-mono leading-relaxed mt-2">
-                  Continuous tracking of physical RAM and swap allocations to prevent Out Of Memory (OOM) killer terminations from bringing down critical services.
-                </p>
-              </div>
-
-              <div className="bg-zinc-900/90 border border-zinc-800 rounded-2xl p-6 shadow-md text-left">
-                <div className="p-2.5 rounded-xl bg-black border border-zinc-800 w-fit mb-4 text-white">
-                  <HardDrive className="h-5 w-5" />
-                </div>
-                <h3 className="text-xs font-bold text-white uppercase tracking-wider font-mono">
-                  Disk & Storage Diagnostics
-                </h3>
-                <p className="text-[11px] text-zinc-400 font-mono leading-relaxed mt-2">
-                  Filesystem mount allocations, storage growth trend projections, and instant alerts when disk partitions approach capacity thresholds.
-                </p>
-              </div>
-            </div>
-          </div>
+          <ServerMonitoring embedded={true} />
         )}
 
         {/* ======================================================== */}
