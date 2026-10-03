@@ -7,6 +7,8 @@ import rateLimit from 'express-rate-limit';
 import { initDb } from './db/init';
 import { initSocket } from './services/socket';
 import { startMonitoring } from './services/monitor';
+import { startApiMonitoring } from './services/apiMonitor';
+import { startAgentHealthMonitor } from './services/agentHealthMonitor';
 import { initNotificationWorker } from './services/notifier';
 import logger from './services/logger';
 
@@ -16,6 +18,9 @@ import settingsRouter from './routes/settings';
 import alertsRouter from './routes/alerts';
 import publicRouter from './routes/public';
 import usersRouter from './routes/users';
+import apiMonitoringRouter from './routes/apiMonitoring';
+import agentRouter from './routes/agent';
+import serversRouter from './routes/servers';
 
 
 // Load environment variables
@@ -57,8 +62,17 @@ const authLimiter = rateLimit({
 app.use(helmet({
   contentSecurityPolicy: false
 }));
+const allowedOrigins = process.env.FRONTEND_URL 
+  ? process.env.FRONTEND_URL.split(',').map(u => u.trim())
+  : ['http://localhost:5173', 'http://localhost', 'http://127.0.0.1'];
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+      return callback(null, true);
+    }
+    return callback(new Error('CORS policy: Not allowed by Access-Control-Allow-Origin'));
+  },
   credentials: true
 }));
 app.use(express.json());
@@ -77,6 +91,9 @@ app.use('/api/settings', settingsRouter);
 app.use('/api/alerts', alertsRouter);
 app.use('/api/public', publicRouter);
 app.use('/api/users', usersRouter);
+app.use('/api/api-monitoring', apiMonitoringRouter);
+app.use('/api/agent', agentRouter);
+app.use('/api/servers', serversRouter);
 
 // Root path handler
 app.get('/', (req: Request, res: Response) => {
@@ -104,8 +121,10 @@ const bootstrap = async () => {
     // 2. Initialize Redis-backed Bull background notification queue consumer
     initNotificationWorker();
 
-    // 3. Start monitoring background tasks
+    // 3. Start monitoring background tasks (Websites, Production APIs, and Server Agents)
     startMonitoring();
+    startApiMonitoring();
+    startAgentHealthMonitor();
 
     // 4. Listen on HTTP port
     httpServer.listen(PORT, () => {

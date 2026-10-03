@@ -92,10 +92,10 @@ const Auth: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#080c14]">
-        <div className="flex flex-col items-center">
-          <Activity className="h-10 w-10 text-emerald-500 animate-pulse-glow-green animate-bounce" />
-          <p className="mt-4 text-slate-400 font-medium tracking-wide">Syncing monitoring cores...</p>
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="flex flex-col items-center glass-panel p-8 rounded-3xl shadow-2xl border border-zinc-800">
+          <Activity className="h-10 w-10 text-white animate-spin" />
+          <p className="mt-4 text-zinc-400 font-medium tracking-wide text-xs font-mono">Syncing monitoring cores...</p>
         </div>
       </div>
     );
@@ -103,46 +103,42 @@ const Auth: React.FC = () => {
 
   return (
     <div className="min-h-screen w-full relative flex items-center justify-center p-4 md:p-8 overflow-hidden select-none">
-      {/* Glow Blur Orbs */}
-      <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] rounded-full bg-emerald-500/10 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[450px] h-[450px] rounded-full bg-blue-500/10 blur-[100px] pointer-events-none" />
-
       {/* Main Container */}
-      <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 rounded-2xl glass-panel overflow-hidden relative z-10">
+      <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 rounded-2xl glass-panel overflow-hidden relative z-10 border border-zinc-800 shadow-2xl">
         
         {/* Left Side: Brand Narrative */}
-        <div className="hidden md:flex flex-col justify-between p-12 bg-gradient-to-br from-slate-900/60 to-slate-950/80 border-r border-white/5 relative">
+        <div className="hidden md:flex flex-col justify-between p-12 bg-zinc-950 border-r border-zinc-800 relative">
           <div className="flex items-center space-x-3">
-            <div className="p-2.5 bg-emerald-500/10 rounded-xl border border-emerald-500/20 glow-green-pulse">
-              <Activity className="h-6 w-6 text-emerald-400" />
+            <div className="p-2.5 bg-zinc-900 rounded-xl border border-zinc-700 glow-mono-pulse">
+              <Activity className="h-6 w-6 text-white" />
             </div>
-            <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
+            <span className="text-xl font-bold tracking-tight text-white font-mono">
               ANTIGRAVITY UPTIME
             </span>
           </div>
 
           <div className="my-4">
-            <h1 className="text-3xl font-extrabold leading-tight text-white mb-3">
+            <h1 className="text-3xl font-extrabold leading-tight text-white mb-3 font-mono">
               Real-Time Node <br />Availability Tracking.
             </h1>
-            <p className="text-slate-400 text-xs leading-relaxed max-w-xs">
+            <p className="text-zinc-400 text-xs leading-relaxed max-w-xs font-mono">
               Monitor response times, analyze SSL health, and receive instant alert notifications during website downtime events.
             </p>
           </div>
 
           {publicEnabled && publicNodes.length > 0 && (
             <div className="mb-6 flex-grow overflow-hidden flex flex-col max-h-[220px]">
-              <h3 className="text-[10px] font-bold text-white uppercase tracking-wider mb-2">Live Node Availability</h3>
+              <h3 className="text-[10px] font-bold text-white uppercase tracking-wider mb-2 font-mono">Live Node Availability</h3>
               <div className="flex-grow overflow-y-auto space-y-2 pr-1 custom-scrollbar">
                 {publicNodes.map((node) => (
-                  <div key={node.id} className="flex justify-between items-center p-2 rounded-xl bg-slate-950/30 border border-white/5 text-xs">
-                    <span className="text-slate-300 font-medium truncate max-w-[160px]">{node.name}</span>
-                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold ${
+                  <div key={node.id} className="flex justify-between items-center p-2 rounded-xl bg-zinc-900/60 border border-zinc-800 text-xs font-mono">
+                    <span className="text-zinc-200 font-medium truncate max-w-[160px]">{node.name}</span>
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold border ${
                       node.is_up === true 
-                        ? 'bg-emerald-500/10 text-emerald-400' 
+                        ? 'bg-zinc-800 text-white border-zinc-600' 
                         : node.is_up === false 
-                        ? 'bg-rose-500/10 text-rose-400' 
-                        : 'bg-slate-800 text-slate-400'
+                        ? 'bg-zinc-950 text-zinc-300 border-zinc-700' 
+                        : 'bg-zinc-900 text-zinc-500 border-zinc-800'
                     }`}>
                       {node.is_up === true ? 'ONLINE' : node.is_up === false ? 'OFFLINE' : 'PENDING'}
                     </span>
@@ -152,19 +148,19 @@ const Auth: React.FC = () => {
             </div>
           )}
 
-          <div className="flex items-center space-x-3 text-xs text-slate-500 bg-slate-900/40 p-3.5 rounded-lg border border-white/5 mt-auto">
-            <ShieldCheck className="h-4.5 w-4.5 text-emerald-500 flex-shrink-0" />
+          <div className="flex items-center space-x-3 text-xs text-zinc-400 bg-zinc-900/60 p-3.5 rounded-lg border border-zinc-800 mt-auto font-mono">
+            <ShieldCheck className="h-4.5 w-4.5 text-white flex-shrink-0" />
             <span>Encrypted credentials & secure cookie sessions.</span>
           </div>
         </div>
 
         {/* Right Side: Authentication Forms */}
-        <div className="p-8 md:p-12 flex flex-col justify-center">
+        <div className="p-8 md:p-12 flex flex-col justify-center bg-zinc-950/40">
           <div className="mb-6">
-            <h2 className="text-2xl font-bold text-white mb-2">
+            <h2 className="text-2xl font-bold text-white mb-2 font-mono">
               {isSetupRequired ? 'System Setup' : 'Secure Core Access'}
             </h2>
-            <p className="text-slate-400 text-sm">
+            <p className="text-zinc-400 text-sm">
               {isSetupRequired 
                 ? 'Initialize database with administrator credentials' 
                 : 'Enter your credentials to manage monitoring tasks'}
@@ -172,13 +168,13 @@ const Auth: React.FC = () => {
           </div>
 
           {infoMsg && (
-            <div className="mb-5 p-3 rounded-lg bg-blue-500/10 border border-blue-500/20 text-xs text-blue-400 leading-relaxed">
+            <div className="mb-5 p-3 rounded-lg bg-zinc-900 border border-zinc-700 text-xs text-zinc-200 leading-relaxed font-mono">
               {infoMsg}
             </div>
           )}
 
           {errorMsg && (
-            <div className="mb-5 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-xs text-red-400 font-medium">
+            <div className="mb-5 p-3 rounded-lg bg-zinc-950 border border-zinc-700 text-xs text-white font-medium font-mono">
               {errorMsg}
             </div>
           )}
@@ -186,9 +182,9 @@ const Auth: React.FC = () => {
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Email field */}
             <div className="space-y-1.5">
-              <label className="text-xs text-slate-400 font-medium block">Account Email</label>
+              <label className="text-xs text-zinc-400 font-medium block font-mono">Account Email</label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500">
+                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-zinc-500">
                   <Mail className="h-4 w-4" />
                 </span>
                 <input
@@ -196,7 +192,7 @@ const Auth: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="admin@monitoring.local"
-                  className="w-full bg-slate-950/50 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
+                  className="w-full bg-zinc-950 border border-zinc-700 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-white transition-colors font-mono"
                   disabled={submitting}
                   required
                 />
@@ -205,9 +201,9 @@ const Auth: React.FC = () => {
 
             {/* Password field */}
             <div className="space-y-1.5">
-              <label className="text-xs text-slate-400 font-medium block">Password</label>
+              <label className="text-xs text-zinc-400 font-medium block font-mono">Password</label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500">
+                <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-zinc-500">
                   <Lock className="h-4 w-4" />
                 </span>
                 <input
@@ -215,7 +211,7 @@ const Auth: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-slate-950/50 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
+                  className="w-full bg-zinc-950 border border-zinc-700 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-white transition-colors font-mono"
                   disabled={submitting}
                   required
                 />
@@ -225,9 +221,9 @@ const Auth: React.FC = () => {
             {/* Confirm Password field (only during register setup) */}
             {isRegistering && isSetupRequired && (
               <div className="space-y-1.5">
-                <label className="text-xs text-slate-400 font-medium block">Confirm Password</label>
+                <label className="text-xs text-zinc-400 font-medium block font-mono">Confirm Password</label>
                 <div className="relative">
-                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500">
+                  <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-zinc-500">
                     <ShieldCheck className="h-4 w-4" />
                   </span>
                   <input
@@ -235,7 +231,7 @@ const Auth: React.FC = () => {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full bg-slate-950/50 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-emerald-500 transition-colors"
+                    className="w-full bg-zinc-950 border border-zinc-700 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-white transition-colors font-mono"
                     disabled={submitting}
                     required={isRegistering}
                   />
@@ -247,7 +243,7 @@ const Auth: React.FC = () => {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full mt-2 flex items-center justify-center space-x-2 py-2.5 px-4 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-slate-950 font-bold rounded-xl shadow-lg shadow-emerald-500/10 cursor-pointer disabled:opacity-50 transition-all"
+              className="w-full mt-2 flex items-center justify-center space-x-2 py-2.5 px-4 bg-white hover:bg-zinc-200 active:bg-zinc-300 text-black font-bold rounded-xl shadow-md cursor-pointer disabled:opacity-50 transition-all font-mono"
             >
               <span>{isSetupRequired ? 'Initialize Console' : 'Access Dashboard'}</span>
               <ArrowRight className="h-4 w-4" />
@@ -261,7 +257,7 @@ const Auth: React.FC = () => {
                 setIsRegistering(false);
                 setErrorMsg('');
               }}
-              className="mt-4 text-xs text-emerald-400 hover:underline cursor-pointer block text-center"
+              className="mt-4 text-xs text-zinc-400 hover:text-white hover:underline cursor-pointer block text-center font-mono"
             >
               Back to Login
             </button>
@@ -269,18 +265,18 @@ const Auth: React.FC = () => {
 
           {/* Public Status List for Mobile at the bottom of forms */}
           {publicEnabled && publicNodes.length > 0 && (
-            <div className="mt-6 pt-5 border-t border-white/5 md:hidden">
-              <h3 className="text-[10px] font-bold text-white uppercase tracking-wider mb-2">Live Node Status</h3>
+            <div className="mt-6 pt-5 border-t border-zinc-800 md:hidden">
+              <h3 className="text-[10px] font-bold text-white uppercase tracking-wider mb-2 font-mono">Live Node Status</h3>
               <div className="grid grid-cols-1 gap-2 max-h-[140px] overflow-y-auto pr-1">
                 {publicNodes.map((node) => (
-                  <div key={node.id} className="flex justify-between items-center p-2 rounded-xl bg-slate-950/30 border border-white/5 text-xs">
-                    <span className="text-slate-300 font-medium truncate max-w-[180px]">{node.name}</span>
-                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold ${
+                  <div key={node.id} className="flex justify-between items-center p-2 rounded-xl bg-zinc-900/60 border border-zinc-800 text-xs font-mono">
+                    <span className="text-zinc-200 font-medium truncate max-w-[180px]">{node.name}</span>
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold border ${
                       node.is_up === true 
-                        ? 'bg-emerald-500/10 text-emerald-400' 
+                        ? 'bg-zinc-800 text-white border-zinc-600' 
                         : node.is_up === false 
-                        ? 'bg-rose-500/10 text-rose-400' 
-                        : 'bg-slate-800 text-slate-400'
+                        ? 'bg-zinc-950 text-zinc-300 border-zinc-700' 
+                        : 'bg-zinc-900 text-zinc-500 border-zinc-800'
                     }`}>
                       {node.is_up === true ? 'ONLINE' : node.is_up === false ? 'OFFLINE' : 'PENDING'}
                     </span>

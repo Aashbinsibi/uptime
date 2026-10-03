@@ -7,9 +7,9 @@
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: dark;
-  color: rgba(255, 255, 255, 0.92);
-  background-color: #080c14;
+  color-scheme: light dark;
+  color: #0f172a;
+  background-color: #f8fafc;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -20,8 +20,11 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background: radial-gradient(circle at top left, #0e1726, #080c14 60%);
+  background-color: #fafbfc;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Ccircle cx='10' cy='10' r='1.1' fill='%23a1a1aa' fill-opacity='0.38'/%3E%3C/svg%3E");
+  background-repeat: repeat;
   background-attachment: fixed;
+  background-size: 20px 20px;
   overflow-x: hidden;
 }
 
@@ -31,37 +34,37 @@ body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #080c14;
+  background: #f1f5f9;
 }
 ::-webkit-scrollbar-thumb {
-  background: #172237;
+  background: #cbd5e1;
   border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #253554;
+  background: #94a3b8;
 }
 
-/* Beautiful dynamic glassmorphism overlay style */
+/* Beautiful dynamic glassmorphism overlay style on geometric background - monochrome noir */
 .glass-panel {
-  background: rgba(13, 20, 35, 0.65);
+  background: rgba(10, 10, 10, 0.92);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 12px 36px -8px rgba(0, 0, 0, 0.25), 0 4px 12px -2px rgba(0, 0, 0, 0.12);
 }
 
 .glass-panel-glow-green {
-  background: rgba(13, 20, 35, 0.7);
+  background: rgba(10, 10, 10, 0.94);
   backdrop-filter: blur(16px);
-  border: 1px solid rgba(16, 185, 129, 0.15);
-  box-shadow: 0 0 20px rgba(16, 185, 129, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.35), 0 0 16px rgba(255, 255, 255, 0.06);
 }
 
 .glass-panel-glow-red {
-  background: rgba(13, 20, 35, 0.7);
+  background: rgba(10, 10, 10, 0.94);
   backdrop-filter: blur(16px);
-  border: 1px solid rgba(239, 68, 68, 0.15);
-  box-shadow: 0 0 20px rgba(239, 68, 68, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.4), 0 0 16px rgba(255, 255, 255, 0.1);
 }
 
 /* Keyframe animations for indicators */
@@ -84,31 +87,20 @@ body {
   animation: ping-slow 2s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
 
-/* Background pulse for status badges */
-@keyframes pulse-glow-green {
+/* Background pulse for status badges - monochrome pulse */
+@keyframes pulse-glow-mono {
   0%, 100% {
-    box-shadow: 0 0 4px rgba(16, 185, 129, 0.4);
+    box-shadow: 0 0 4px rgba(255, 255, 255, 0.25);
   }
   50% {
-    box-shadow: 0 0 16px rgba(16, 185, 129, 0.8);
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.6);
   }
 }
 
-.glow-green-pulse {
-  animation: pulse-glow-green 2s infinite;
-}
-
-@keyframes pulse-glow-red {
-  0%, 100% {
-    box-shadow: 0 0 4px rgba(239, 68, 68, 0.4);
-  }
-  50% {
-    box-shadow: 0 0 16px rgba(239, 68, 68, 0.8);
-  }
-}
-
+.glow-mono-pulse,
+.glow-green-pulse,
 .glow-red-pulse {
-  animation: pulse-glow-red 2s infinite;
+  animation: pulse-glow-mono 2s infinite;
 }
 
 /* Shimmer load states */
