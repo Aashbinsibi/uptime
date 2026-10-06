@@ -41,9 +41,10 @@ RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 # Copy package manifests
 COPY package*.json ./
 
-# Copy production node_modules and compiled code from builder
+# Copy production node_modules, compiled code, and agent distribution files
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist ./dist
+COPY agent ./agent
 
 # Set file permissions for the unprivileged user
 RUN chown -R appuser:appgroup /app

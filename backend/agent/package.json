@@ -1,0 +1,7 @@
+{
+  "name": "gravity-agent",
+  "version": "0.1.0",
+  "description": "Gravity Infrastructure Monitoring Daemon for Uptime",
+  "main": "src/index.js",
+  "private": true
+}
